@@ -576,73 +576,158 @@ function ShowcaseSection() {
 }
 
 /* ───────────────────────────────────────────
-   Section: PRICING (Simplified)
+   Section: PRICING
    ─────────────────────────────────────────── */
 
 function PricingSection() {
   const { ref, isInView } = useFadeInView();
 
+  const plans = [
+    {
+      name: "Básico",
+      price: "$100.000",
+      period: "/mes",
+      desc: "Perfecto para restaurantes pequeños que buscan digitalizarse.",
+      featured: false,
+      features: [
+        "Creador de Sitio Web y Menú Digital",
+        "Integración Uber Eats & Rappi",
+        "Pasarela de Pagos (MercadoPago / Transbank)",
+        "KDS Pantalla de Cocina",
+        "Generación de Boletas SII",
+        "Soporte por email (L-V)",
+      ],
+      missing: ["Sin funciones de Inteligencia Artificial"],
+    },
+    {
+      name: "Profesional",
+      price: "$350.000",
+      period: "/mes",
+      desc: "Para restaurantes en crecimiento que buscan optimización.",
+      featured: true,
+      features: [
+        "Todo lo del plan Básico",
+        "Gestión Multi-sucursal (hasta 3)",
+        "Reportes avanzados de ventas",
+        "IA: Predicción básica de demanda",
+        "IA: Sugerencias de menú",
+        "Soporte prioritario por chat (L-V)",
+      ],
+      missing: [],
+    },
+    {
+      name: "Avanzado",
+      price: "$1.000.000",
+      period: "/mes",
+      desc: "Para cadenas y operaciones de alto volumen que requieren automatización total.",
+      featured: false,
+      features: [
+        "Todo lo del plan Profesional",
+        "Sucursales ilimitadas",
+        "IA Predictiva Avanzada (inventario)",
+        "WhatsApp Bot con IA para pedidos",
+        "Soporte técnico 24/7 dedicado",
+        "Account Manager asignado",
+      ],
+      missing: [],
+    },
+  ];
+
   return (
     <section id="pricing" ref={ref} className="relative py-32 bg-[#0a0a0a]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           variants={fadeUp}
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           custom={0}
+          className="text-center mb-20"
         >
           <span className="text-sm font-medium text-orange-400 tracking-widest uppercase mb-4 block">
             Precios Transparentes
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Paga solo si vendes
+            Planes que escalan contigo
           </h2>
-          <p className="text-slate-400 text-lg mb-12">
-            Sin costos fijos ocultos. Activa tu Wrapper completo hoy mismo.
+          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            Elige el plan que mejor se adapte a las necesidades operativas de tu restaurante.
           </p>
         </motion.div>
 
-        <motion.div
-          variants={fadeUp}
-          initial="hidden"
-          animate={isInView ? "visible" : "hidden"}
-          custom={1}
-          className="relative rounded-3xl bg-gradient-to-b from-orange-500/10 to-rose-500/5 border border-orange-500/20 p-8 md:p-16 max-w-2xl mx-auto shadow-2xl shadow-orange-500/10"
-        >
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-6 py-2 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 text-white font-bold text-sm shadow-lg">
-            Plan Todo Incluido
-          </div>
-          
-          <div className="flex justify-center items-baseline gap-2 mb-8 mt-4">
-            <span className="text-5xl font-black text-white">2.9%</span>
-            <span className="text-slate-400">+ $100 por transacción</span>
-          </div>
-
-          <ul className="space-y-4 text-left max-w-md mx-auto mb-10">
-            {[
-              "Creador de Sitio Web y Menú Digital",
-              "Integración Uber Eats & Rappi",
-              "Pasarela de Pagos (MercadoPago / Transbank)",
-              "KDS Pantalla de Cocina",
-              "Generación automática de Boletas SII",
-              "Soporte 24/7"
-            ].map((feat) => (
-              <li key={feat} className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0">
-                  <Check size={14} className="text-orange-400" />
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
+          {plans.map((plan, i) => (
+            <motion.div
+              key={plan.name}
+              variants={fadeUp}
+              initial="hidden"
+              animate={isInView ? "visible" : "hidden"}
+              custom={i + 1}
+              className={cn(
+                "relative rounded-3xl p-8 flex flex-col h-full",
+                plan.featured
+                  ? "bg-gradient-to-b from-orange-500/10 to-rose-500/5 border border-orange-500/30 shadow-2xl shadow-orange-500/10 md:-mt-4"
+                  : "bg-white/5 border border-white/10"
+              )}
+            >
+              {plan.featured && (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-orange-500 to-rose-500 text-white font-bold text-xs shadow-lg">
+                  Más Recomendado
                 </div>
-                <span className="text-slate-300">{feat}</span>
-              </li>
-            ))}
-          </ul>
+              )}
 
-          <a
-            href="/register"
-            className="inline-block w-full py-4 rounded-full bg-white text-[#0a0a0a] font-bold text-lg hover:bg-slate-200 transition-colors"
-          >
-            Comenzar Gratis
-          </a>
-        </motion.div>
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
+                <p className="text-sm text-slate-400 h-10">{plan.desc}</p>
+              </div>
+
+              <div className="flex items-baseline gap-1 mb-8">
+                <span className="text-4xl font-black text-white">{plan.price}</span>
+                <span className="text-slate-400 font-medium">CLP {plan.period}</span>
+              </div>
+
+              <div className="flex-1 space-y-6">
+                <ul className="space-y-4">
+                  {plan.features.map((feat) => (
+                    <li key={feat} className="flex items-start gap-3 text-sm">
+                      <div className={cn(
+                        "mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0",
+                        plan.featured ? "bg-orange-500/20" : "bg-white/10"
+                      )}>
+                        <Check size={12} className={plan.featured ? "text-orange-400" : "text-white"} />
+                      </div>
+                      <span className="text-slate-300 leading-tight">{feat}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {plan.missing.length > 0 && (
+                  <ul className="space-y-4 pt-4 border-t border-white/10">
+                    {plan.missing.map((feat) => (
+                      <li key={feat} className="flex items-start gap-3 text-sm opacity-50">
+                        <div className="mt-0.5 w-5 h-5 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0">
+                          <span className="text-white/40 text-xs font-bold">✕</span>
+                        </div>
+                        <span className="text-slate-400 leading-tight">{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <a
+                href="/register"
+                className={cn(
+                  "block w-full text-center py-4 rounded-xl font-bold text-sm transition-all mt-8",
+                  plan.featured
+                    ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg hover:shadow-orange-500/25"
+                    : "bg-white/10 text-white hover:bg-white/20"
+                )}
+              >
+                Comenzar Ahora
+              </a>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
