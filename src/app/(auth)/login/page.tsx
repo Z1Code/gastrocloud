@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 function GoogleIcon() {
   return (
@@ -50,6 +51,111 @@ const itemVariants = {
     transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
   },
 };
+
+function GoogleSignInButton() {
+  const [pressed, setPressed] = useState(false);
+
+  const handleClick = () => {
+    if (pressed) return;
+    setPressed(true);
+    // Small delay so the user sees the swipe animation before redirect
+    setTimeout(() => {
+      signIn("google", { callbackUrl: "/redirect" });
+    }, 600);
+  };
+
+  return (
+    <motion.div
+      className="relative"
+      variants={itemVariants}
+    >
+      {/* Soft ambient glow — no competing animate loops */}
+      <div
+        className="absolute -inset-1 rounded-[20px] blur-xl transition-opacity duration-700"
+        style={{
+          background: "linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335)",
+          opacity: pressed ? 0.5 : 0.15,
+        }}
+      />
+
+      {/* Gradient border ring */}
+      <div
+        className="absolute -inset-px rounded-2xl"
+        style={{
+          background: "linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335)",
+          opacity: 0.5,
+        }}
+      />
+
+      {/* The actual button */}
+      <motion.button
+        onClick={handleClick}
+        disabled={pressed}
+        className="relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-white px-6 py-4 text-sm font-semibold text-gray-800 disabled:cursor-not-allowed"
+        whileHover={pressed ? {} : { scale: 1.015 }}
+        whileTap={pressed ? {} : { scale: 0.975 }}
+        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+      >
+        {/* Left-to-right swipe fill on press */}
+        <AnimatePresence>
+          {pressed && (
+            <motion.div
+              className="pointer-events-none absolute inset-0 z-0"
+              style={{
+                background: "linear-gradient(90deg, #4285F4, #34A853, #FBBC05, #EA4335)",
+              }}
+              initial={{ x: "-100%" }}
+              animate={{ x: "0%" }}
+              transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Idle shimmer — pure CSS, no framer animate loop */}
+        {!pressed && (
+          <div
+            className="pointer-events-none absolute inset-0 z-0 rounded-2xl"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, transparent 40%, rgba(255,255,255,0.5) 50%, transparent 60%, transparent 100%)",
+              backgroundSize: "200% 100%",
+              animation: "shimmer 3s ease-in-out infinite",
+            }}
+          />
+        )}
+
+        {/* Content */}
+        <motion.span
+          className="relative z-10 flex items-center gap-3"
+          animate={pressed ? { color: "#ffffff" } : { color: "#1f2937" }}
+          transition={{ duration: 0.3, delay: pressed ? 0.2 : 0 }}
+        >
+          {pressed ? (
+            <motion.svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1, rotate: 360 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </motion.svg>
+          ) : (
+            <GoogleIcon />
+          )}
+          <span>{pressed ? "Redirigiendo..." : "Continuar con Google"}</span>
+        </motion.span>
+      </motion.button>
+    </motion.div>
+  );
+}
 
 export default function LoginPage() {
   return (
@@ -161,19 +267,7 @@ export default function LoginPage() {
           </motion.div>
 
           {/* Google Sign In Button */}
-          <motion.button
-            onClick={() => signIn("google", { callbackUrl: "/redirect" })}
-            className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-white px-6 py-4 text-sm font-semibold text-gray-800 transition-all duration-300 hover:bg-gray-50 hover:shadow-lg hover:shadow-white/10"
-            variants={itemVariants}
-            whileHover={{ scale: 1.02, y: -1 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <GoogleIcon />
-            <span>Continuar con Google</span>
-            <motion.div
-              className="absolute inset-0 rounded-2xl opacity-0 ring-2 ring-indigo-400/50 transition-opacity duration-300 group-hover:opacity-100"
-            />
-          </motion.button>
+          <GoogleSignInButton />
 
           {/* Terms */}
           <motion.p
