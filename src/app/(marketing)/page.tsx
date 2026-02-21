@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import {
   Monitor,
   QrCode,
@@ -192,30 +192,38 @@ function HeroSection() {
 }
 
 /* ───────────────────────────────────────────
-   Section: PROCESS BREAKDOWN (Sticky Scroll)
+   Section: PROCESS BREAKDOWN (Interactive Timeline)
    ─────────────────────────────────────────── */
 
 function ProcessBreakdown() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start center", "end center"],
-  });
+  const [progress, setProgress] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
-  const [activeStep, setActiveStep] = useState(0);
-
-  // Sync scroll progress to active step based on progress thresholds
+  // Auto-advance timeline
   useEffect(() => {
-    const unsubscribe = scrollYProgress.onChange((v) => {
-      if (v < 0.3) setActiveStep(0);
-      else if (v < 0.65) setActiveStep(1);
-      else setActiveStep(2);
-    });
-    return () => unsubscribe();
-  }, [scrollYProgress]);
+    if (isHovered) return;
+    
+    const duration = 15000;
+    const intervalTime = 50;
+    const increment = (intervalTime / duration) * 100;
 
-  // Height transform for the connecting line
-  const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) return 0;
+        return prev + increment;
+      });
+    }, intervalTime);
+
+    return () => clearInterval(timer);
+  }, [isHovered]);
+
+  const activeStep = progress < 33.33 ? 0 : progress < 66.66 ? 1 : 2;
+
+  const handleStepClick = (index: number) => {
+    if (index === 0) setProgress(0);
+    if (index === 1) setProgress(33.34);
+    if (index === 2) setProgress(66.67);
+  };
 
   const steps = [
     {
@@ -253,72 +261,79 @@ function ProcessBreakdown() {
           </h2>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-start" ref={containerRef}>
-          {/* Left Column: Scrolling Text Content */}
-          <div className="relative pb-[40vh]">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
+          {/* Left Column: Interactive Text Content */}
+          <div 
+            className="relative py-4"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
             {/* Background Vertical Line */}
-            <div className="absolute left-[23px] top-6 bottom-[40vh] w-1 bg-white/5 hidden md:block rounded-full" />
+            <div className="absolute left-[23px] top-6 bottom-6 w-1 bg-white/5 hidden md:block rounded-full overflow-hidden">
+              {/* Animated Fill Vertical Line */}
+              <div 
+                className="absolute top-0 left-0 w-full bg-gradient-to-b from-orange-500 via-rose-500 to-amber-500 transition-all duration-75 ease-linear"
+                style={{ height: `${progress}%` }}
+              />
+            </div>
 
-            {/* Animated Fill Vertical Line */}
-            <motion.div
-              className="absolute left-[23px] top-6 bottom-[40vh] w-1 bg-gradient-to-b from-orange-500 via-rose-500 to-amber-500 hidden md:block rounded-full origin-top"
-              style={{ scaleY: scrollYProgress }}
-            />
-
-            {steps.map((step, index) => {
-              const isActive = activeStep >= index;
-              const isCurrentlyActive = activeStep === index;
-              return (
-                <div 
-                  key={step.id} 
-                  className={cn(
-                    "relative md:pl-20 transition-all duration-700 flex flex-col justify-center min-h-[40vh] py-12",
-                    isActive ? "opacity-100 translate-x-0" : "opacity-30 -translate-x-4"
-                  )}
-                >
-                  {/* Node */}
-                  <div className={cn(
-                    "hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border-4 border-[#050505] items-center justify-center transition-all duration-500",
-                    isCurrentlyActive 
-                      ? "bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.6)] scale-110" 
-                      : isActive ? "bg-orange-500" : "bg-slate-800 scale-100"
-                  )}>
-                    <step.icon className={cn("w-5 h-5 transition-colors duration-500", isActive ? "text-white" : "text-slate-400")} />
-                  </div>
-
-                  {/* Mobile icon */}
-                  <div className="md:hidden flex items-center gap-4 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
-                       <step.icon className="w-5 h-5 text-orange-500" />
+            <div className="space-y-16 relative z-10">
+              {steps.map((step, index) => {
+                const isActive = activeStep >= index;
+                const isCurrentlyActive = activeStep === index;
+                return (
+                  <div 
+                    key={step.id} 
+                    onClick={() => handleStepClick(index)}
+                    className={cn(
+                      "relative md:pl-20 transition-all duration-500 cursor-pointer group",
+                      isActive ? "opacity-100" : "opacity-40 hover:opacity-70"
+                    )}
+                  >
+                    {/* Node */}
+                    <div className={cn(
+                      "hidden md:flex absolute left-0 top-1 w-12 h-12 rounded-full border-4 border-[#050505] items-center justify-center transition-all duration-500",
+                      isCurrentlyActive 
+                        ? "bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.6)] scale-110" 
+                        : isActive ? "bg-orange-500" : "bg-slate-800 scale-100 group-hover:scale-105"
+                    )}>
+                      <step.icon className={cn("w-5 h-5 transition-colors duration-500", isActive ? "text-white" : "text-slate-400")} />
                     </div>
-                    <h3 className="text-2xl font-bold text-white">{step.title}</h3>
-                  </div>
 
-                  <h3 className="hidden md:block text-3xl font-bold text-white mb-4">{step.title}</h3>
-                  <p className="text-lg text-slate-400 leading-relaxed">{step.desc}</p>
-                  
-                  {/* Spacer for scroll effect */}
-                  <div className="h-48 hidden lg:block" />
-                </div>
-              );
-            })}
+                    {/* Mobile icon */}
+                    <div className="md:hidden flex items-center gap-4 mb-3">
+                      <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
+                        isCurrentlyActive ? "bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.5)]" : "bg-white/10"
+                      )}>
+                         <step.icon className={cn("w-5 h-5", isCurrentlyActive ? "text-white" : "text-slate-400")} />
+                      </div>
+                      <h3 className="text-xl font-bold text-white">{step.title}</h3>
+                    </div>
+
+                    <h3 className="hidden md:block text-2xl font-bold text-white mb-3">{step.title}</h3>
+                    <p className="text-base text-slate-400 leading-relaxed">{step.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Right Column: Sticky Visuals */}
-          <div className="hidden lg:block sticky top-32 h-[600px] w-full rounded-3xl overflow-hidden border border-white/10 bg-slate-900/50 shadow-2xl">
-            {/* Shared hero image area — always visible, crossfades between steps */}
+          {/* Right Column: Visuals */}
+          <div className="relative h-[600px] w-full rounded-3xl overflow-hidden border border-white/10 bg-slate-900/50 shadow-2xl">
+            {/* Shared hero image area */}
             <div className="relative h-52 shrink-0 border-b border-white/10 overflow-hidden">
               {[
                 "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=1600",
                 "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=1600",
-                "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&q=80&w=1600",
+                "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&q=80&w=1600",
               ].map((src, i) => (
                 <img
                   key={i}
                   src={src}
                   alt=""
                   className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out"
-                  style={{ opacity: activeStep === i ? 0.55 : 0 }}
+                  style={{ opacity: activeStep === i ? 0.6 : 0 }}
                 />
               ))}
               <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
@@ -346,7 +361,7 @@ function ProcessBreakdown() {
               </div>
             </div>
 
-            {/* Content area below image — crossfades between steps */}
+            {/* Content area below image */}
             <div className="relative flex-1 h-[calc(100%-13rem)]">
               <AnimatePresence mode="wait">
                 {activeStep === 0 && (
@@ -403,7 +418,7 @@ function ProcessBreakdown() {
                   >
                     <h4 className="text-xl font-bold text-white mb-5 text-center">Centro de Integraciones</h4>
                     <div className="space-y-4">
-                      <div className="p-5 rounded-2xl bg-black/50 backdrop-blur-md border border-white/10">
+                      <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
                         <div className="text-xs font-semibold text-slate-400 mb-3">Canales de Delivery</div>
                         <div className="grid grid-cols-2 gap-3">
                           <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
@@ -426,7 +441,7 @@ function ProcessBreakdown() {
                           </div>
                         </div>
                       </div>
-                      <div className="p-5 rounded-2xl bg-black/50 backdrop-blur-md border border-white/10">
+                      <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
                         <div className="text-xs font-semibold text-slate-400 mb-3">Pasarelas de Pago</div>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
@@ -465,7 +480,7 @@ function ProcessBreakdown() {
                     className="absolute inset-0 p-8 overflow-hidden bg-[#0a0a0a]"
                   >
                     {/* KDS Header */}
-                    <div className="flex items-center justify-between mb-5 bg-black/50 p-3 rounded-xl backdrop-blur-md border border-white/10">
+                    <div className="flex items-center justify-between mb-5 bg-white/5 p-3 rounded-xl border border-white/10">
                       <h4 className="text-base font-bold text-white flex items-center gap-2">
                         <Monitor className="w-5 h-5 text-orange-500" /> KDS Cocina
                       </h4>
