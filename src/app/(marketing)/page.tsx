@@ -199,16 +199,16 @@ function ProcessBreakdown() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start center", "end center"],
+    offset: ["start start", "end end"],
   });
 
   const [activeStep, setActiveStep] = useState(0);
 
-  // Sync scroll progress to active step based on progress thresholds
+  // Sync scroll progress to active step — 3 equal zones
   useEffect(() => {
     const unsubscribe = scrollYProgress.onChange((v) => {
-      if (v < 0.25) setActiveStep(0);
-      else if (v < 0.75) setActiveStep(1);
+      if (v < 0.33) setActiveStep(0);
+      else if (v < 0.66) setActiveStep(1);
       else setActiveStep(2);
     });
     return () => unsubscribe();
@@ -255,13 +255,13 @@ function ProcessBreakdown() {
 
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-start" ref={containerRef}>
           {/* Left Column: Scrolling Text Content */}
-          <div className="relative pb-[40vh]">
+          <div className="relative pb-[60vh]">
             {/* Background Vertical Line */}
-            <div className="absolute left-[23px] top-6 bottom-[40vh] w-1 bg-white/5 hidden md:block rounded-full" />
-            
+            <div className="absolute left-[23px] top-6 bottom-[60vh] w-1 bg-white/5 hidden md:block rounded-full" />
+
             {/* Animated Fill Vertical Line */}
-            <motion.div 
-              className="absolute left-[23px] top-6 bottom-[40vh] w-1 bg-gradient-to-b from-orange-500 via-rose-500 to-amber-500 hidden md:block rounded-full origin-top"
+            <motion.div
+              className="absolute left-[23px] top-6 bottom-[60vh] w-1 bg-gradient-to-b from-orange-500 via-rose-500 to-amber-500 hidden md:block rounded-full origin-top"
               style={{ scaleY: scrollYProgress }}
             />
 
@@ -297,7 +297,7 @@ function ProcessBreakdown() {
                   <p className="text-lg text-slate-400 leading-relaxed">{step.desc}</p>
                   
                   {/* Spacer for scroll effect */}
-                  <div className="h-32 hidden lg:block" />
+                  <div className="h-48 hidden lg:block" />
                 </div>
               );
             })}
