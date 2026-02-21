@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Google's Product Sans for the "Google" wordmark on the login button */
+@font-face {
+  font-family: "Product Sans";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://fonts.gstatic.com/s/productsans/v5/HYvgU2fE2nRJvZ5JFAumwegdm0LZdjqr5-oayXSOefg.woff2")
+    format("woff2");
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

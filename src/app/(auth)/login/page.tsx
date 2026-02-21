@@ -58,100 +58,107 @@ function GoogleSignInButton() {
   const handleClick = () => {
     if (pressed) return;
     setPressed(true);
-    // Small delay so the user sees the swipe animation before redirect
     setTimeout(() => {
       signIn("google", { callbackUrl: "/redirect" });
-    }, 600);
+    }, 700);
   };
 
   return (
-    <motion.div
-      className="relative"
-      variants={itemVariants}
-    >
-      {/* Soft ambient glow — no competing animate loops */}
+    <motion.div className="relative" variants={itemVariants}>
+      {/* Subtle outer glow — barely visible, grows on hover */}
       <div
-        className="absolute -inset-1 rounded-[20px] blur-xl transition-opacity duration-700"
+        className="absolute -inset-2 rounded-[22px] blur-2xl transition-all duration-700"
         style={{
-          background: "linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335)",
-          opacity: pressed ? 0.5 : 0.15,
+          background: "radial-gradient(ellipse at center, rgba(255,255,255,0.06), transparent 70%)",
+          opacity: pressed ? 0.12 : 0.04,
         }}
       />
 
-      {/* Gradient border ring */}
-      <div
-        className="absolute -inset-px rounded-2xl"
-        style={{
-          background: "linear-gradient(135deg, #4285F4, #34A853, #FBBC05, #EA4335)",
-          opacity: 0.5,
-        }}
-      />
-
-      {/* The actual button */}
       <motion.button
         onClick={handleClick}
         disabled={pressed}
-        className="relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-white px-6 py-4 text-sm font-semibold text-gray-800 disabled:cursor-not-allowed"
-        whileHover={pressed ? {} : { scale: 1.015 }}
-        whileTap={pressed ? {} : { scale: 0.975 }}
+        className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.04] px-6 py-4 backdrop-blur-sm transition-colors duration-500 hover:border-white/[0.14] hover:bg-white/[0.06] disabled:cursor-not-allowed"
+        whileHover={pressed ? {} : { scale: 1.01 }}
+        whileTap={pressed ? {} : { scale: 0.985 }}
         transition={{ type: "spring", stiffness: 500, damping: 30 }}
       >
-        {/* Left-to-right swipe fill on press */}
+        {/* Left-to-right swipe fill on press — soft pearlescent wash */}
         <AnimatePresence>
           {pressed && (
             <motion.div
               className="pointer-events-none absolute inset-0 z-0"
               style={{
-                background: "linear-gradient(90deg, #4285F4, #34A853, #FBBC05, #EA4335)",
+                background: "linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.10) 40%, rgba(255,255,255,0.06) 100%)",
               }}
               initial={{ x: "-100%" }}
               animate={{ x: "0%" }}
-              transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             />
           )}
         </AnimatePresence>
 
-        {/* Idle shimmer — pure CSS, no framer animate loop */}
+        {/* Idle shimmer — very soft, barely there */}
         {!pressed && (
           <div
             className="pointer-events-none absolute inset-0 z-0 rounded-2xl"
             style={{
               background:
-                "linear-gradient(90deg, transparent 0%, transparent 40%, rgba(255,255,255,0.5) 50%, transparent 60%, transparent 100%)",
+                "linear-gradient(90deg, transparent 0%, transparent 40%, rgba(255,255,255,0.04) 50%, transparent 60%, transparent 100%)",
               backgroundSize: "200% 100%",
-              animation: "shimmer 3s ease-in-out infinite",
+              animation: "shimmer 4s ease-in-out infinite",
             }}
           />
         )}
 
         {/* Content */}
-        <motion.span
-          className="relative z-10 flex items-center gap-3"
-          animate={pressed ? { color: "#ffffff" } : { color: "#1f2937" }}
-          transition={{ duration: 0.3, delay: pressed ? 0.2 : 0 }}
-        >
-          {pressed ? (
-            <motion.svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1, rotate: 360 }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
+        <span className="relative z-10 flex items-center gap-2.5">
+          {/* Google icon — fades to spinner on press */}
+          <AnimatePresence mode="wait">
+            {pressed ? (
+              <motion.div
+                key="spinner"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex h-5 w-5 items-center justify-center"
+              >
+                <motion.div
+                  className="h-4 w-4 rounded-full border-2 border-white/20 border-t-white/70"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                />
+              </motion.div>
+            ) : (
+              <motion.span
+                key="icon"
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.15 }}
+              >
+                <GoogleIcon />
+              </motion.span>
+            )}
+          </AnimatePresence>
+
+          <span className="text-sm text-white/60 transition-colors duration-300 group-hover:text-white/80">
+            Continuar con{" "}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <span
+              className="inline-block translate-y-px font-medium tracking-wide text-white transition-colors duration-300 group-hover:text-white"
+              style={{ fontFamily: "'Product Sans', 'Google Sans', system-ui, sans-serif" }}
             >
-              <path d="M5 12h14" />
-              <path d="m12 5 7 7-7 7" />
-            </motion.svg>
-          ) : (
-            <GoogleIcon />
-          )}
-          <span>{pressed ? "Redirigiendo..." : "Continuar con Google"}</span>
-        </motion.span>
+              Google
+            </span>
+          </span>
+
+          {/* Subtle arrow on hover */}
+          <motion.span
+            className="inline-flex text-white/0 transition-all duration-300 group-hover:text-white/40"
+            aria-hidden
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </motion.span>
+        </span>
       </motion.button>
     </motion.div>
   );

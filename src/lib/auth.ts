@@ -15,27 +15,40 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  debug: process.env.NODE_ENV === "development" || process.env.NEXTAUTH_DEBUG === "1",
   pages: {
     signIn: "/login",
   },
   callbacks: {
+    async signIn({ user, account }) {
+      // Log sign-in attempts to help debug callback errors
+      console.log("[NextAuth] signIn callback:", {
+        userId: user?.id,
+        email: user?.email,
+        provider: account?.provider,
+      });
+      return true;
+    },
+
     async jwt({ token, user }) {
-      // On initial sign-in, user object is available
       if (user) {
         token.id = user.id;
       }
 
-      // Fetch staff role from DB on every token refresh
       if (token.id) {
-        const staff = await getStaffMember(token.id);
-        if (staff) {
-          token.role = staff.role;
-          token.organizationId = staff.organizationId;
-          token.branchId = staff.branchId;
-        } else {
-          token.role = undefined;
-          token.organizationId = undefined;
-          token.branchId = undefined;
+        try {
+          const staff = await getStaffMember(token.id);
+          if (staff) {
+            token.role = staff.role;
+            token.organizationId = staff.organizationId;
+            token.branchId = staff.branchId;
+          } else {
+            token.role = undefined;
+            token.organizationId = undefined;
+            token.branchId = undefined;
+          }
+        } catch (err) {
+          console.error("[NextAuth] jwt callback error fetching staff:", err);
         }
       }
 
@@ -53,7 +66,6 @@ export const authOptions: NextAuthOptions = {
     },
 
     async redirect({ url, baseUrl }) {
-      // If it's a relative URL or same origin, allow it
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
