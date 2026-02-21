@@ -363,63 +363,73 @@ function ProcessBreakdown() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.4 }}
-                  className="absolute inset-0 bg-[#0a0a0a] p-8 flex flex-col justify-center"
+                  className="absolute inset-0 bg-[#0a0a0a] flex flex-col"
                 >
-                  <h4 className="text-2xl font-bold text-white mb-8 text-center">Centro de Integraciones</h4>
-                  
-                  <div className="space-y-6">
-                    {/* Delivery Card */}
-                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                      <div className="text-sm font-semibold text-slate-400 mb-4">Canales de Delivery</div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                          <div className="flex items-center gap-3">
-                            <Store className="w-8 h-8 text-emerald-400" />
-                            <span className="font-bold text-white">Uber Eats</span>
+                  <div className="h-48 relative overflow-hidden shrink-0 border-b border-white/10">
+                    <img 
+                      src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=1600" 
+                      alt="Delivery and Payments" 
+                      className="w-full h-full object-cover opacity-60"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
+                  </div>
+                  <div className="flex-1 p-8 flex flex-col justify-start -mt-8 relative z-10">
+                    <h4 className="text-2xl font-bold text-white mb-6 text-center drop-shadow-md">Centro de Integraciones</h4>
+                    
+                    <div className="space-y-6">
+                      {/* Delivery Card */}
+                      <div className="p-6 rounded-2xl bg-black/50 backdrop-blur-md border border-white/10 shadow-xl">
+                        <div className="text-sm font-semibold text-slate-400 mb-4">Canales de Delivery</div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex items-center justify-between p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                            <div className="flex items-center gap-3">
+                              <Store className="w-8 h-8 text-emerald-400" />
+                              <span className="font-bold text-white">Uber Eats</span>
+                            </div>
+                            <div className="w-12 h-6 rounded-full bg-emerald-500 relative shadow-[0_0_10px_rgba(16,185,129,0.5)]">
+                              <div className="absolute right-1 top-1 bottom-1 w-4 rounded-full bg-white" />
+                            </div>
                           </div>
-                          <div className="w-12 h-6 rounded-full bg-emerald-500 relative shadow-[0_0_10px_rgba(16,185,129,0.5)]">
-                            <div className="absolute right-1 top-1 bottom-1 w-4 rounded-full bg-white" />
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
-                          <div className="flex items-center gap-3">
-                            <Store className="w-8 h-8 text-orange-400" />
-                            <span className="font-bold text-white">Rappi</span>
-                          </div>
-                          <div className="w-12 h-6 rounded-full bg-orange-500 relative shadow-[0_0_10px_rgba(249,115,22,0.5)]">
-                            <div className="absolute right-1 top-1 bottom-1 w-4 rounded-full bg-white" />
+                          <div className="flex items-center justify-between p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                            <div className="flex items-center gap-3">
+                              <Store className="w-8 h-8 text-orange-400" />
+                              <span className="font-bold text-white">Rappi</span>
+                            </div>
+                            <div className="w-12 h-6 rounded-full bg-orange-500 relative shadow-[0_0_10px_rgba(249,115,22,0.5)]">
+                              <div className="absolute right-1 top-1 bottom-1 w-4 rounded-full bg-white" />
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Payment Card */}
-                    <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                      <div className="text-sm font-semibold text-slate-400 mb-4">Pasarelas de Pago</div>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                              <CreditCard className="w-5 h-5 text-white" />
+                      {/* Payment Card */}
+                      <div className="p-6 rounded-2xl bg-black/50 backdrop-blur-md border border-white/10 shadow-xl">
+                        <div className="text-sm font-semibold text-slate-400 mb-4">Pasarelas de Pago</div>
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                                <CreditCard className="w-5 h-5 text-white" />
+                              </div>
+                              <div>
+                                <div className="font-bold text-white">MercadoPago</div>
+                                <div className="text-xs text-emerald-400 font-medium">Conectado y Activo</div>
+                              </div>
                             </div>
-                            <div>
-                              <div className="font-bold text-white">MercadoPago</div>
-                              <div className="text-xs text-emerald-400 font-medium">Conectado y Activo</div>
-                            </div>
+                            <Check className="w-6 h-6 text-emerald-400" />
                           </div>
-                          <Check className="w-6 h-6 text-emerald-400" />
-                        </div>
-                        <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-rose-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
-                              <CreditCard className="w-5 h-5 text-white" />
+                          <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                            <div className="flex items-center gap-4">
+                              <div className="w-10 h-10 rounded-full bg-rose-500 flex items-center justify-center shadow-lg shadow-rose-500/20">
+                                <CreditCard className="w-5 h-5 text-white" />
+                              </div>
+                              <div>
+                                <div className="font-bold text-white">Transbank Webpay</div>
+                                <div className="text-xs text-slate-500 font-medium">Configurar credenciales</div>
+                              </div>
                             </div>
-                            <div>
-                              <div className="font-bold text-white">Transbank Webpay</div>
-                              <div className="text-xs text-slate-500 font-medium">Configurar credenciales</div>
-                            </div>
+                            <ArrowRight className="w-5 h-5 text-slate-500" />
                           </div>
-                          <ArrowRight className="w-5 h-5 text-slate-500" />
                         </div>
                       </div>
                     </div>
@@ -434,10 +444,18 @@ function ProcessBreakdown() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.4 }}
-                  className="absolute inset-0 bg-[#0a0a0a] flex"
+                  className="absolute inset-0 flex flex-col bg-[#0a0a0a]"
                 >
-                  <div className="flex-1 p-8 flex flex-col justify-center">
-                    <div className="flex items-center justify-between mb-8">
+                  <div className="h-48 relative overflow-hidden shrink-0 border-b border-white/10">
+                    <img 
+                      src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&q=80&w=1600" 
+                      alt="Kitchen operations" 
+                      className="w-full h-full object-cover opacity-60"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
+                  </div>
+                  <div className="flex-1 p-8 flex flex-col justify-start -mt-8 relative z-10">
+                    <div className="flex items-center justify-between mb-8 bg-black/50 p-4 rounded-2xl backdrop-blur-md border border-white/10 shadow-xl">
                       <h4 className="text-xl font-bold text-white flex items-center gap-2">
                         <Monitor className="w-6 h-6 text-orange-500" /> KDS Cocina
                       </h4>
