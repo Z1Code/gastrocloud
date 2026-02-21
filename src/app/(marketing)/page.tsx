@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import { motion, useInView, AnimatePresence } from "framer-motion";
+import { useRef } from "react";
+import { motion, useInView, useScroll } from "framer-motion";
 import {
   Monitor,
   QrCode,
@@ -196,34 +196,11 @@ function HeroSection() {
    ─────────────────────────────────────────── */
 
 function ProcessBreakdown() {
-  const [progress, setProgress] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-
-  // Auto-advance timeline
-  useEffect(() => {
-    if (isHovered) return;
-    
-    const duration = 15000;
-    const intervalTime = 50;
-    const increment = (intervalTime / duration) * 100;
-
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) return 0;
-        return prev + increment;
-      });
-    }, intervalTime);
-
-    return () => clearInterval(timer);
-  }, [isHovered]);
-
-  const activeStep = progress < 33.33 ? 0 : progress < 66.66 ? 1 : 2;
-
-  const handleStepClick = (index: number) => {
-    if (index === 0) setProgress(0);
-    if (index === 1) setProgress(33.34);
-    if (index === 2) setProgress(66.67);
-  };
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start center", "end center"],
+  });
 
   const steps = [
     {
@@ -247,9 +224,9 @@ function ProcessBreakdown() {
   ];
 
   return (
-    <section id="process" className="relative bg-[#050505] py-24 md:py-32">
+    <section id="process" className="relative bg-[#050505] py-24 md:py-32 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-16 text-center md:text-left">
+        <div className="mb-20 text-center md:text-left">
           <span className="text-sm font-bold text-orange-500 tracking-widest uppercase mb-4 block">
             El Flujo Perfecto
           </span>
@@ -261,125 +238,52 @@ function ProcessBreakdown() {
           </h2>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-center">
-          {/* Left Column: Interactive Text Content */}
-          <div 
-            className="relative py-4"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-          >
-            {/* Background Vertical Line */}
-            <div className="absolute left-[23px] top-6 bottom-6 w-1 bg-white/5 hidden md:block rounded-full overflow-hidden">
-              {/* Animated Fill Vertical Line */}
-              <div 
-                className="absolute top-0 left-0 w-full bg-gradient-to-b from-orange-500 via-rose-500 to-amber-500 transition-all duration-75 ease-linear"
-                style={{ height: `${progress}%` }}
-              />
-            </div>
-
-            <div className="space-y-16 relative z-10">
-              {steps.map((step, index) => {
-                const isActive = activeStep >= index;
-                const isCurrentlyActive = activeStep === index;
-                return (
-                  <div 
-                    key={step.id} 
-                    onClick={() => handleStepClick(index)}
-                    className={cn(
-                      "relative md:pl-20 transition-all duration-500 cursor-pointer group",
-                      isActive ? "opacity-100" : "opacity-40 hover:opacity-70"
-                    )}
-                  >
-                    {/* Node */}
-                    <div className={cn(
-                      "hidden md:flex absolute left-0 top-1 w-12 h-12 rounded-full border-4 border-[#050505] items-center justify-center transition-all duration-500",
-                      isCurrentlyActive 
-                        ? "bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.6)] scale-110" 
-                        : isActive ? "bg-orange-500" : "bg-slate-800 scale-100 group-hover:scale-105"
-                    )}>
-                      <step.icon className={cn("w-5 h-5 transition-colors duration-500", isActive ? "text-white" : "text-slate-400")} />
-                    </div>
-
-                    {/* Mobile icon */}
-                    <div className="md:hidden flex items-center gap-4 mb-3">
-                      <div className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center transition-colors",
-                        isCurrentlyActive ? "bg-orange-500 shadow-[0_0_15px_rgba(249,115,22,0.5)]" : "bg-white/10"
-                      )}>
-                         <step.icon className={cn("w-5 h-5", isCurrentlyActive ? "text-white" : "text-slate-400")} />
-                      </div>
-                      <h3 className="text-xl font-bold text-white">{step.title}</h3>
-                    </div>
-
-                    <h3 className="hidden md:block text-2xl font-bold text-white mb-3">{step.title}</h3>
-                    <p className="text-base text-slate-400 leading-relaxed">{step.desc}</p>
-                  </div>
-                );
-              })}
-            </div>
+        <div className="relative" ref={containerRef}>
+          {/* Background Vertical Line */}
+          <div className="absolute left-[23px] top-10 bottom-10 w-1 bg-white/5 hidden md:block rounded-full overflow-hidden">
+            {/* Animated Fill Vertical Line */}
+            <motion.div 
+              className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-orange-500 via-rose-500 to-amber-500 origin-top"
+              style={{ scaleY: scrollYProgress }}
+            />
           </div>
 
-          {/* Right Column: Visuals */}
-          <div className="relative h-[600px] w-full rounded-3xl overflow-hidden border border-white/10 bg-slate-900/50 shadow-2xl">
-            {/* Shared hero image area */}
-            <div className="relative h-52 shrink-0 border-b border-white/10 overflow-hidden">
-              {[
-                "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=1600",
-                "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=1600",
-                "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&q=80&w=1600",
-              ].map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out"
-                  style={{ opacity: activeStep === i ? 0.6 : 0 }}
-                />
-              ))}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
-
-              {/* Step badge */}
-              <div className="absolute top-4 left-4 z-10">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={activeStep}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/10"
-                  >
-                    {(() => {
-                      const StepIcon = steps[activeStep].icon;
-                      return <StepIcon className="w-4 h-4 text-orange-400" />;
-                    })()}
-                    <span className="text-xs font-semibold text-white/80">
-                      {activeStep === 0 ? "Tu Web" : activeStep === 1 ? "Integraciones" : "Cocina & Boletas"}
-                    </span>
-                  </motion.div>
-                </AnimatePresence>
+          <div className="space-y-32 relative z-10">
+            {/* Step 1 */}
+            <div className="relative md:pl-20 grid lg:grid-cols-2 gap-12 items-center group">
+              {/* Node */}
+              <div className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border-4 border-[#050505] items-center justify-center bg-slate-900 z-10 transition-colors duration-500 group-hover:border-orange-500/30">
+                <Laptop className="w-5 h-5 text-slate-400 group-hover:text-orange-400 transition-colors duration-500" />
               </div>
-            </div>
 
-            {/* Content area below image */}
-            <div className="relative flex-1 h-[calc(100%-13rem)]">
-              <AnimatePresence mode="wait">
-                {activeStep === 0 && (
-                  <motion.div
-                    key="content-0"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -12 }}
-                    transition={{ duration: 0.35 }}
-                    className="absolute inset-0 p-8 overflow-hidden bg-[#0a0a0a]"
-                  >
-                    {/* Mock Website Builder */}
-                    <div className="flex items-center gap-2 mb-5 px-3 py-2 rounded-lg bg-white/5 border border-white/10 w-fit">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
-                      <span className="ml-2 text-xs text-white/40 font-mono">gastrocloud.app/tu-restaurante</span>
-                    </div>
+              {/* Text */}
+              <div className="order-2 lg:order-1">
+                <div className="md:hidden flex items-center gap-4 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                     <Laptop className="w-5 h-5 text-orange-400" />
+                  </div>
+                </div>
+                <h3 className="text-3xl font-bold text-white mb-4">{steps[0].title}</h3>
+                <p className="text-lg text-slate-400 leading-relaxed">{steps[0].desc}</p>
+              </div>
+
+              {/* Visual */}
+              <div className="order-1 lg:order-2 w-full rounded-3xl overflow-hidden border border-white/10 bg-slate-900/50 shadow-2xl flex flex-col h-[400px]">
+                <div className="h-12 border-b border-white/10 flex items-center px-4 bg-white/5 gap-2 shrink-0">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                  <div className="ml-4 px-3 py-1 rounded bg-white/10 text-xs text-white/50 font-mono">
+                    gastrocloud.app/tu-restaurante
+                  </div>
+                </div>
+                <div className="flex-1 relative overflow-hidden bg-[#0a0a0a]">
+                  <img 
+                    src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=1600" 
+                    alt="Restaurant Food" 
+                    className="w-full h-40 object-cover opacity-50"
+                  />
+                  <div className="absolute top-24 left-8 right-8">
                     <div className="flex items-center gap-4 mb-6">
                       <div className="w-16 h-16 rounded-2xl bg-white shadow-lg flex items-center justify-center border-2 border-[#0a0a0a]">
                         <Store className="w-7 h-7 text-orange-500" />
@@ -404,144 +308,160 @@ function ProcessBreakdown() {
                         </div>
                       ))}
                     </div>
-                  </motion.div>
-                )}
-
-                {activeStep === 1 && (
-                  <motion.div
-                    key="content-1"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -12 }}
-                    transition={{ duration: 0.35 }}
-                    className="absolute inset-0 p-8 overflow-hidden bg-[#0a0a0a]"
-                  >
-                    <h4 className="text-xl font-bold text-white mb-5 text-center">Centro de Integraciones</h4>
-                    <div className="space-y-4">
-                      <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
-                        <div className="text-xs font-semibold text-slate-400 mb-3">Canales de Delivery</div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                            <div className="flex items-center gap-2">
-                              <Store className="w-6 h-6 text-emerald-400" />
-                              <span className="font-bold text-white text-sm">Uber Eats</span>
-                            </div>
-                            <div className="w-10 h-5 rounded-full bg-emerald-500 relative shadow-[0_0_8px_rgba(16,185,129,0.5)]">
-                              <div className="absolute right-0.5 top-0.5 bottom-0.5 w-4 rounded-full bg-white" />
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
-                            <div className="flex items-center gap-2">
-                              <Store className="w-6 h-6 text-orange-400" />
-                              <span className="font-bold text-white text-sm">Rappi</span>
-                            </div>
-                            <div className="w-10 h-5 rounded-full bg-orange-500 relative shadow-[0_0_8px_rgba(249,115,22,0.5)]">
-                              <div className="absolute right-0.5 top-0.5 bottom-0.5 w-4 rounded-full bg-white" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-5 rounded-2xl bg-white/5 border border-white/10">
-                        <div className="text-xs font-semibold text-slate-400 mb-3">Pasarelas de Pago</div>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center"><CreditCard className="w-4 h-4 text-white" /></div>
-                              <div>
-                                <div className="font-bold text-white text-sm">MercadoPago</div>
-                                <div className="text-[10px] text-emerald-400 font-medium">Conectado</div>
-                              </div>
-                            </div>
-                            <Check className="w-5 h-5 text-emerald-400" />
-                          </div>
-                          <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center"><CreditCard className="w-4 h-4 text-white" /></div>
-                              <div>
-                                <div className="font-bold text-white text-sm">Transbank</div>
-                                <div className="text-[10px] text-slate-500 font-medium">Configurar</div>
-                              </div>
-                            </div>
-                            <ArrowRight className="w-4 h-4 text-slate-500" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {activeStep === 2 && (
-                  <motion.div
-                    key="content-2"
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -12 }}
-                    transition={{ duration: 0.35 }}
-                    className="absolute inset-0 p-8 overflow-hidden bg-[#0a0a0a]"
-                  >
-                    {/* KDS Header */}
-                    <div className="flex items-center justify-between mb-5 bg-white/5 p-3 rounded-xl border border-white/10">
-                      <h4 className="text-base font-bold text-white flex items-center gap-2">
-                        <Monitor className="w-5 h-5 text-orange-500" /> KDS Cocina
-                      </h4>
-                      <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-[10px] font-bold animate-pulse border border-red-500/30">
-                        3 Pendientes
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 h-[calc(100%-3.5rem)]">
-                      {/* Order Card */}
-                      <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex flex-col shadow-lg shadow-amber-500/5">
-                        <div className="flex justify-between items-center mb-4 border-b border-amber-500/20 pb-2">
-                          <span className="text-xl font-black text-white">#0142</span>
-                          <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded">UberEats</span>
-                        </div>
-                        <div className="flex-1 space-y-2 text-sm">
-                          <div className="text-white font-medium flex justify-between">
-                            <span>2x Burger Doble</span> <span className="text-slate-400 text-xs">Sin cebolla</span>
-                          </div>
-                          <div className="text-white font-medium">1x Papas Fritas</div>
-                          <div className="text-white font-medium">2x Cola 500cc</div>
-                        </div>
-                        <div className="mt-4 pt-3 border-t border-amber-500/20 flex justify-between items-center">
-                          <div className="flex items-center gap-1.5 text-red-400 font-mono text-lg font-bold">
-                            <Timer className="w-5 h-5" /> 12:45
-                          </div>
-                          <button className="px-4 py-2 bg-amber-500 text-white font-bold rounded-lg text-xs shadow-lg shadow-amber-500/20">Listo</button>
-                        </div>
-                      </div>
-
-                      {/* Receipt */}
-                      <div className="relative flex items-center justify-center">
-                        <motion.div
-                          className="w-48 bg-white rounded-xl shadow-2xl p-4 flex flex-col z-10"
-                          initial={{ y: 30, opacity: 0 }}
-                          animate={{ y: [0, -10, 0], opacity: 1 }}
-                          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                        >
-                          <div className="text-center border-b-2 border-dashed border-slate-300 pb-2 mb-2">
-                            <div className="font-black text-slate-800 text-base tracking-tight">BOLETA</div>
-                            <div className="text-[10px] text-slate-500 font-bold">SII - CHILE</div>
-                          </div>
-                          <div className="text-xs text-slate-600 space-y-1.5 mb-3 font-medium">
-                            <div className="flex justify-between"><span>Burger x2</span><span>$15.980</span></div>
-                            <div className="flex justify-between"><span>Papas</span><span>$3.500</span></div>
-                            <div className="flex justify-between"><span>Bebidas x2</span><span>$4.000</span></div>
-                          </div>
-                          <div className="border-t-2 border-slate-800 pt-2 flex justify-between font-black text-slate-800 text-sm">
-                            <span>TOTAL</span><span>$23.480</span>
-                          </div>
-                          <div className="mt-3 flex justify-center">
-                            <QrCode className="w-12 h-12 text-slate-800" />
-                          </div>
-                        </motion.div>
-                        <div className="absolute bottom-2 w-40 h-3 bg-slate-800 rounded-full blur-[2px] opacity-40" />
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            {/* Step 2 */}
+            <div className="relative md:pl-20 grid lg:grid-cols-2 gap-12 items-center group">
+              {/* Node */}
+              <div className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border-4 border-[#050505] items-center justify-center bg-slate-900 z-10 transition-colors duration-500 group-hover:border-rose-500/30">
+                <Zap className="w-5 h-5 text-slate-400 group-hover:text-rose-400 transition-colors duration-500" />
+              </div>
+
+              {/* Text */}
+              <div className="order-2 lg:order-1">
+                <div className="md:hidden flex items-center gap-4 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                     <Zap className="w-5 h-5 text-rose-400" />
+                  </div>
+                </div>
+                <h3 className="text-3xl font-bold text-white mb-4">{steps[1].title}</h3>
+                <p className="text-lg text-slate-400 leading-relaxed">{steps[1].desc}</p>
+              </div>
+
+              {/* Visual */}
+              <div className="order-1 lg:order-2 w-full rounded-3xl overflow-hidden border border-white/10 bg-slate-900/50 shadow-2xl flex flex-col h-[400px]">
+                <div className="h-40 relative overflow-hidden shrink-0 border-b border-white/10">
+                  <img 
+                    src="https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&q=80&w=1600" 
+                    alt="Delivery and Payments" 
+                    className="w-full h-full object-cover opacity-60"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] to-transparent" />
+                </div>
+                <div className="flex-1 p-6 flex flex-col justify-start -mt-8 relative z-10 bg-[#0a0a0a]">
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                      <div className="text-xs font-semibold text-slate-400 mb-3">Canales de Delivery</div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                          <div className="flex items-center gap-2">
+                            <Store className="w-6 h-6 text-emerald-400" />
+                            <span className="font-bold text-white text-sm">Uber Eats</span>
+                          </div>
+                          <div className="w-10 h-5 rounded-full bg-emerald-500 relative shadow-[0_0_8px_rgba(16,185,129,0.5)]">
+                            <div className="absolute right-0.5 top-0.5 bottom-0.5 w-4 rounded-full bg-white" />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                          <div className="flex items-center gap-2">
+                            <Store className="w-6 h-6 text-orange-400" />
+                            <span className="font-bold text-white text-sm">Rappi</span>
+                          </div>
+                          <div className="w-10 h-5 rounded-full bg-orange-500 relative shadow-[0_0_8px_rgba(249,115,22,0.5)]">
+                            <div className="absolute right-0.5 top-0.5 bottom-0.5 w-4 rounded-full bg-white" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                      <div className="text-xs font-semibold text-slate-400 mb-3">Pasarelas de Pago</div>
+                      <div className="flex gap-4">
+                        <div className="flex-1 flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center"><CreditCard className="w-4 h-4 text-white" /></div>
+                            <div>
+                              <div className="font-bold text-white text-sm">MercadoPago</div>
+                              <div className="text-[10px] text-emerald-400 font-medium">Activo</div> 
+                            </div>
+                          </div>
+                          <Check className="w-5 h-5 text-emerald-400" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative md:pl-20 grid lg:grid-cols-2 gap-12 items-center group">
+              {/* Node */}
+              <div className="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border-4 border-[#050505] items-center justify-center bg-slate-900 z-10 transition-colors duration-500 group-hover:border-amber-500/30">
+                <Brain className="w-5 h-5 text-slate-400 group-hover:text-amber-400 transition-colors duration-500" />
+              </div>
+
+              {/* Text */}
+              <div className="order-2 lg:order-1">
+                <div className="md:hidden flex items-center gap-4 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+                     <Brain className="w-5 h-5 text-amber-400" />
+                  </div>
+                </div>
+                <h3 className="text-3xl font-bold text-white mb-4">{steps[2].title}</h3>
+                <p className="text-lg text-slate-400 leading-relaxed">{steps[2].desc}</p>
+              </div>
+
+              {/* Visual */}
+              <div className="order-1 lg:order-2 w-full rounded-3xl overflow-hidden border border-white/10 bg-slate-900/50 shadow-2xl flex flex-col h-[400px]">
+                <div className="flex-1 p-6 flex flex-col justify-center bg-[#0a0a0a]">
+                  <div className="flex items-center justify-between mb-5 bg-white/5 p-3 rounded-xl border border-white/10">
+                    <h4 className="text-base font-bold text-white flex items-center gap-2">
+                      <Monitor className="w-5 h-5 text-orange-500" /> KDS Cocina
+                    </h4>
+                    <div className="px-3 py-1 rounded-full bg-red-500/20 text-red-400 text-[10px] font-bold animate-pulse border border-red-500/30">
+                      3 Pendientes
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 flex-1">
+                    {/* Order Card */}
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex flex-col shadow-lg shadow-amber-500/5">
+                      <div className="flex justify-between items-center mb-4 border-b border-amber-500/20 pb-2">
+                        <span className="text-xl font-black text-white">#0142</span>
+                        <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded">UberEats</span>
+                      </div>
+                      <div className="flex-1 space-y-2 text-sm">
+                        <div className="text-white font-medium flex justify-between">
+                          <span>2x Burger Doble</span> <span className="text-slate-400 text-[10px] sm:text-xs">Sin cebolla</span>
+                        </div>
+                        <div className="text-white font-medium">1x Papas Fritas</div>
+                        <div className="text-white font-medium">2x Cola 500cc</div>
+                      </div>
+                      <div className="mt-4 pt-3 border-t border-amber-500/20 flex justify-between items-center">
+                        <div className="flex items-center gap-1.5 text-red-400 font-mono text-lg font-bold">
+                          <Timer className="w-5 h-5" /> 12:45
+                        </div>
+                        <button className="px-3 py-1.5 bg-amber-500 text-white font-bold rounded-lg text-xs shadow-lg shadow-amber-500/20">Listo</button>
+                      </div>
+                    </div>
+
+                    {/* Receipt */}
+                    <div className="relative flex items-center justify-center">
+                      <div className="w-full max-w-[180px] bg-white rounded-xl shadow-2xl p-4 flex flex-col z-10 border-t-[16px] border-[#0a0a0a]">
+                        <div className="text-center border-b-2 border-dashed border-slate-300 pb-2 mb-2">
+                          <div className="font-black text-slate-800 text-sm tracking-tight">BOLETA SII</div>
+                        </div>
+                        <div className="text-[10px] text-slate-600 space-y-1.5 mb-3 font-medium">
+                          <div className="flex justify-between"><span>Burger x2</span><span>$15.980</span></div>
+                          <div className="flex justify-between"><span>Papas</span><span>$3.500</span></div>
+                          <div className="flex justify-between"><span>Bebidas x2</span><span>$4.000</span></div>
+                        </div>
+                        <div className="border-t-2 border-slate-800 pt-2 flex justify-between font-black text-slate-800 text-xs">
+                          <span>TOTAL</span><span>$23.480</span>
+                        </div>
+                        <div className="mt-3 flex justify-center">
+                          <QrCode className="w-8 h-8 text-slate-800" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
