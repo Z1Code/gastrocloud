@@ -569,6 +569,23 @@ function ShowcaseSection() {
               <p className="text-slate-300">Reemplaza las comandas de papel. Cada pedido entra al KDS con tiempos claros y especificaciones exactas del cliente.</p>
             </div>
           </motion.div>
+
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate={isInView ? "visible" : "hidden"}
+            className="group md:col-span-2 relative rounded-3xl overflow-hidden h-80 md:h-96"
+          >
+            <img 
+              src="https://images.unsplash.com/photo-1554902843-260acd0993f8?auto=format&fit=crop&q=80&w=2000" 
+              alt="Facturación y automatización" 
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8 md:p-12">
+              <h3 className="text-3xl font-bold text-white mb-3">Factura en Piloto Automático</h3>
+              <p className="text-slate-300 max-w-2xl text-lg">La boleta electrónica del SII se genera y se envía automáticamente con cada venta de cualquiera de tus canales, evitando descuadres de caja y liberándote de tareas manuales.</p>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
