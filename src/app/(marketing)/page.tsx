@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { motion, useInView, useScroll, AnimatePresence } from "framer-motion";
+import { motion, useInView, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import {
   Monitor,
   QrCode,
@@ -199,20 +199,23 @@ function ProcessBreakdown() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start start", "end end"],
+    offset: ["start center", "end center"],
   });
 
   const [activeStep, setActiveStep] = useState(0);
 
-  // Sync scroll progress to active step
+  // Sync scroll progress to active step based on progress thresholds
   useEffect(() => {
     const unsubscribe = scrollYProgress.onChange((v) => {
-      if (v < 0.33) setActiveStep(0);
-      else if (v < 0.66) setActiveStep(1);
+      if (v < 0.25) setActiveStep(0);
+      else if (v < 0.75) setActiveStep(1);
       else setActiveStep(2);
     });
     return () => unsubscribe();
   }, [scrollYProgress]);
+
+  // Height transform for the connecting line
+  const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   const steps = [
     {
@@ -253,25 +256,33 @@ function ProcessBreakdown() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-start" ref={containerRef}>
           {/* Left Column: Scrolling Text Content */}
           <div className="relative">
-            {/* Vertical Line */}
-            <div className="absolute left-[23px] top-6 bottom-6 w-0.5 bg-white/10 hidden md:block" />
+            {/* Background Vertical Line */}
+            <div className="absolute left-[23px] top-6 bottom-[140px] w-1 bg-white/5 hidden md:block rounded-full" />
+            
+            {/* Animated Fill Vertical Line */}
+            <motion.div 
+              className="absolute left-[23px] top-6 bottom-[140px] w-1 bg-gradient-to-b from-orange-500 via-rose-500 to-amber-500 hidden md:block rounded-full origin-top"
+              style={{ scaleY: scrollYProgress }}
+            />
 
             {steps.map((step, index) => {
-              const isActive = activeStep === index;
+              const isActive = activeStep >= index;
               return (
                 <div 
                   key={step.id} 
                   className={cn(
-                    "relative md:pl-20 mb-24 last:mb-0 transition-all duration-500",
-                    isActive ? "opacity-100" : "opacity-40"
+                    "relative md:pl-20 mb-32 last:mb-10 transition-all duration-700",
+                    isActive ? "opacity-100 translate-x-0" : "opacity-30 -translate-x-4"
                   )}
                 >
                   {/* Node */}
                   <div className={cn(
-                    "hidden md:flex absolute left-0 top-1 w-12 h-12 rounded-full border-4 border-[#050505] items-center justify-center transition-colors duration-500",
-                    isActive ? "bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.4)]" : "bg-slate-800"
+                    "hidden md:flex absolute left-0 top-1 w-12 h-12 rounded-full border-4 border-[#050505] items-center justify-center transition-all duration-500",
+                    isActive 
+                      ? "bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.6)] scale-110" 
+                      : "bg-slate-800 scale-100"
                   )}>
-                    <step.icon className={cn("w-5 h-5", isActive ? "text-white" : "text-slate-400")} />
+                    <step.icon className={cn("w-5 h-5 transition-colors duration-500", isActive ? "text-white" : "text-slate-400")} />
                   </div>
 
                   {/* Mobile icon */}
