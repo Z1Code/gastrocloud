@@ -158,7 +158,7 @@ function Toggle({
         <div
           className={`w-10 h-5 rounded-full transition-colors ${
             checked
-              ? "bg-gradient-to-r from-indigo-500 to-violet-500"
+              ? "bg-gradient-to-r from-orange-500 to-rose-500"
               : "bg-white/10"
           }`}
         />
@@ -212,7 +212,7 @@ function WebhookUrl({ path }: { path: string }) {
   return (
     <div className="flex items-center gap-2 p-3 rounded-lg bg-white/[0.03] border border-white/[0.06] mb-4">
       <span className="text-xs text-slate-500 shrink-0">Webhook URL:</span>
-      <code className="text-xs text-indigo-300 truncate flex-1">{url}</code>
+      <code className="text-xs text-orange-300 truncate flex-1">{url}</code>
       <button
         onClick={() => {
           navigator.clipboard.writeText(url);
@@ -547,7 +547,7 @@ export default function IntegrationsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -576,7 +576,7 @@ export default function IntegrationsPage() {
       {/* ─── Section: Pasarelas de Pago ──────────────── */}
       <div className="mb-10">
         <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <span className="w-1.5 h-5 rounded-full bg-gradient-to-b from-indigo-500 to-violet-500" />
+          <span className="w-1.5 h-5 rounded-full bg-gradient-to-b from-orange-500 to-rose-500" />
           Pasarelas de Pago
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -625,7 +625,7 @@ export default function IntegrationsPage() {
                         value={form.credentials[field.key] ?? ""}
                         onChange={(e) => updateField(gw.key, field.key, e.target.value)}
                         placeholder={`Ingresa tu ${field.label}`}
-                        className="w-full h-10 px-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all font-mono"
+                        className="w-full h-10 px-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-all font-mono"
                       />
                     </div>
                   ))}
@@ -644,7 +644,7 @@ export default function IntegrationsPage() {
                     Probar Conexion
                   </button>
                   <button onClick={() => handleSave(gw.key)} disabled={isSaving || !hasCredentials}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                     {isSaving ? <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> : null}
                     Guardar
                   </button>
@@ -728,7 +728,7 @@ export default function IntegrationsPage() {
                         value={form.credentials[field.key] ?? ""}
                         onChange={(e) => updateDeliveryField(dp.key, field.key, e.target.value)}
                         placeholder={`Ingresa tu ${field.label}`}
-                        className="w-full h-10 px-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all font-mono"
+                        className="w-full h-10 px-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-all font-mono"
                       />
                     </div>
                   ))}
@@ -745,7 +745,7 @@ export default function IntegrationsPage() {
                           value={form.extras[field.key] ?? ""}
                           onChange={(e) => updateDeliveryExtra(dp.key, field.key, e.target.value)}
                           placeholder={field.placeholder || `Ingresa ${field.label}`}
-                          className="w-full h-10 px-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
+                          className="w-full h-10 px-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-all"
                         />
                       </div>
                     ))}

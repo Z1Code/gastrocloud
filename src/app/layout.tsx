@@ -29,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
-        className={`${inter.variable} font-sans antialiased min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-950 dark:via-indigo-950/50 dark:to-slate-950`}
+        className={`${inter.variable} font-sans antialiased min-h-screen bg-white dark:bg-gradient-to-br dark:from-slate-950 dark:via-orange-950/50 dark:to-slate-950`}
       >
         <AuthProvider>{children}</AuthProvider>
       </body>

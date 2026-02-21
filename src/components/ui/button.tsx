@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 
 const variants = {
   default:
-    "bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40",
+    "bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40",
   secondary:
     "bg-white/10 backdrop-blur-sm text-white border border-white/10 hover:bg-white/15",
   ghost: "text-gray-300 hover:bg-white/5 hover:text-white",
@@ -63,7 +63,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         className={cn(
           "inline-flex items-center justify-center font-medium transition-all duration-200",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900",
           "disabled:opacity-50 disabled:pointer-events-none",
           variants[variant],
           sizes[size],

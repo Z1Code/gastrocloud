@@ -37,7 +37,7 @@ export function KDSStats() {
 
       <div className="flex items-center gap-2 text-sm text-white/60">
         <span className="text-white/30">Pedidos activos:</span>
-        <span className="font-bold text-indigo-400">
+        <span className="font-bold text-orange-400">
           <AnimatedNumber value={stats.activeOrders} />
         </span>
       </div>

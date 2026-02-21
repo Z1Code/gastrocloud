@@ -29,7 +29,7 @@ function Switch({ checked = false, onChange, label, disabled = false, className 
         className={cn(
           "relative h-6 w-11 rounded-full transition-colors duration-200",
           checked
-            ? "bg-gradient-to-r from-indigo-500 to-violet-500"
+            ? "bg-gradient-to-r from-orange-500 to-rose-500"
             : "bg-white/10 border border-white/10"
         )}
       >

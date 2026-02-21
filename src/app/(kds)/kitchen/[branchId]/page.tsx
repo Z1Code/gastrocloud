@@ -53,7 +53,7 @@ export default function KDSPage() {
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
           <h1 className="text-xl font-bold text-white tracking-tight">
             GastroCloud
-            <span className="text-indigo-400 ml-1.5 font-normal text-sm">KDS</span>
+            <span className="text-orange-400 ml-1.5 font-normal text-sm">KDS</span>
           </h1>
         </div>
 

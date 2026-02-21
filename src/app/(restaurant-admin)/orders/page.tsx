@@ -49,11 +49,11 @@ const sources: ("Todos" | OrderSource)[] = [
 ];
 
 const sourceColors: Record<OrderSource, string> = {
-  Web: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
+  Web: "bg-orange-500/20 text-orange-300 border-orange-500/30",
   "Uber Eats": "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
   Rappi: "bg-orange-500/20 text-orange-300 border-orange-500/30",
   WhatsApp: "bg-green-500/20 text-green-300 border-green-500/30",
-  POS: "bg-violet-500/20 text-violet-300 border-violet-500/30",
+  POS: "bg-rose-500/20 text-rose-300 border-rose-500/30",
 };
 
 const statusStyles: Record<OrderStatus, { bg: string; icon: React.ElementType }> = {
@@ -71,7 +71,7 @@ const actionLabel: Record<OrderStatus, string> = {
 };
 
 const actionStyle: Record<OrderStatus, string> = {
-  Pendiente: "bg-gradient-to-r from-indigo-500 to-violet-500 text-white",
+  Pendiente: "bg-gradient-to-r from-orange-500 to-rose-500 text-white",
   Preparando: "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
   Listo: "bg-gradient-to-r from-blue-500 to-cyan-500 text-white",
   Completado: "bg-white/10 text-slate-300 hover:bg-white/15",
@@ -133,7 +133,7 @@ export default function OrdersPage() {
             className={cn(
               "px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap",
               activeStatus === tab.value
-                ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-lg shadow-indigo-500/25"
+                ? "bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-500/25"
                 : "text-slate-400 hover:text-white hover:bg-white/5"
             )}
           >

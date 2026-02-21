@@ -97,7 +97,7 @@ export default function TrackPage() {
         initial={{ y: 16, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.15 }}
-        className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-5 text-white text-center mb-6 shadow-lg shadow-indigo-500/20"
+        className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl p-5 text-white text-center mb-6 shadow-lg shadow-orange-500/20"
       >
         <p className="text-sm text-white/80">Tu pedido estará listo en</p>
         <div className="flex items-center justify-center gap-2 mt-2">
@@ -125,7 +125,7 @@ export default function TrackPage() {
                     <div
                       className={cn(
                         "w-full h-full",
-                        step.status === "done" ? "bg-indigo-600" : "bg-gray-200"
+                        step.status === "done" ? "bg-orange-600" : "bg-gray-200"
                       )}
                     />
                   </div>
@@ -134,7 +134,7 @@ export default function TrackPage() {
                 {/* Dot */}
                 <div className="relative z-10 shrink-0">
                   {step.status === "done" && (
-                    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
                       </svg>
@@ -145,9 +145,9 @@ export default function TrackPage() {
                       <motion.div
                         animate={{ scale: [1, 1.4, 1] }}
                         transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" as const }}
-                        className="absolute inset-0 rounded-full bg-indigo-400/30"
+                        className="absolute inset-0 rounded-full bg-orange-400/30"
                       />
-                      <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center relative">
+                      <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center relative">
                         <motion.div
                           animate={{ rotate: 360 }}
                           transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
@@ -169,7 +169,7 @@ export default function TrackPage() {
                     className={cn(
                       "font-medium text-sm leading-8",
                       step.status === "done" && "text-gray-900",
-                      step.status === "current" && "text-indigo-600 font-semibold",
+                      step.status === "current" && "text-orange-600 font-semibold",
                       step.status === "pending" && "text-gray-400"
                     )}
                   >
@@ -234,7 +234,7 @@ export default function TrackPage() {
 
       {/* Back to menu */}
       <div className="text-center mt-4">
-        <Link href={`/r/${slug}/menu`} className="text-sm text-indigo-600 font-medium">
+        <Link href={`/r/${slug}/menu`} className="text-sm text-orange-600 font-medium">
           Volver al menú
         </Link>
       </div>

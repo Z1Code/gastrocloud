@@ -69,7 +69,7 @@ const stationColors: Record<string, string> = {
   "Cocina Fr\u00eda": "bg-cyan-500/20 text-cyan-300",
   Parrilla: "bg-red-500/20 text-red-300",
   "Pasteler\u00eda": "bg-pink-500/20 text-pink-300",
-  Bar: "bg-violet-500/20 text-violet-300",
+  Bar: "bg-rose-500/20 text-rose-300",
 };
 
 /* ── Component ─────────────────────────────────────────── */
@@ -108,7 +108,7 @@ export default function MenuPage() {
             Administra los platos y precios de tu restaurante
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 text-white text-sm font-medium shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-shadow">
+        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 text-white text-sm font-medium shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-shadow">
           <Plus size={16} />
           Agregar Plato
         </button>
@@ -130,7 +130,7 @@ export default function MenuPage() {
           placeholder="Buscar en el men\u00fa..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full h-10 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
+          className="w-full h-10 pl-10 pr-4 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-all"
         />
       </motion.div>
 
@@ -150,7 +150,7 @@ export default function MenuPage() {
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left",
                   activeCategory === cat.name
-                    ? "bg-gradient-to-r from-indigo-500/20 to-violet-500/20 text-white border border-indigo-500/20"
+                    ? "bg-gradient-to-r from-orange-500/20 to-rose-500/20 text-white border border-orange-500/20"
                     : "text-slate-400 hover:text-white hover:bg-white/5"
                 )}
               >
@@ -160,7 +160,7 @@ export default function MenuPage() {
                   className={cn(
                     "text-xs px-2 py-0.5 rounded-md",
                     activeCategory === cat.name
-                      ? "bg-indigo-500/20 text-indigo-300"
+                      ? "bg-orange-500/20 text-orange-300"
                       : "bg-white/5 text-slate-500"
                   )}
                 >
@@ -192,7 +192,7 @@ export default function MenuPage() {
                   )}
                 >
                   {/* Image placeholder */}
-                  <div className="h-36 bg-gradient-to-br from-indigo-500/10 via-violet-500/10 to-purple-500/10 flex items-center justify-center relative">
+                  <div className="h-36 bg-gradient-to-br from-orange-500/10 via-rose-500/10 to-amber-500/10 flex items-center justify-center relative">
                     <span className="text-5xl">{item.emoji}</span>
                     {!item.available && (
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
@@ -234,7 +234,7 @@ export default function MenuPage() {
                         className={cn(
                           "relative w-10 h-5 rounded-full transition-colors",
                           item.available
-                            ? "bg-gradient-to-r from-indigo-500 to-violet-500"
+                            ? "bg-gradient-to-r from-orange-500 to-rose-500"
                             : "bg-white/10"
                         )}
                       >

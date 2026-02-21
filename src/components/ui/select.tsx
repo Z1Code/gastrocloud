@@ -87,8 +87,8 @@ function Select({
           "w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl text-sm",
           "bg-white/5 backdrop-blur-sm border border-white/10",
           "hover:bg-white/10 transition-all duration-200",
-          "focus:outline-none focus:ring-2 focus:ring-indigo-500/50",
-          open && "ring-2 ring-indigo-500/50 border-indigo-500/50",
+          "focus:outline-none focus:ring-2 focus:ring-orange-500/50",
+          open && "ring-2 ring-orange-500/50 border-orange-500/50",
           error && "border-red-500/50",
           "min-h-[44px]"
         )}
@@ -101,7 +101,7 @@ function Select({
             ? selectedOptions.map((opt) => (
                 <span
                   key={opt.value}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 text-xs"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-500/20 text-orange-300 text-xs"
                 >
                   {opt.label}
                   <X
@@ -164,13 +164,13 @@ function Select({
                     className={cn(
                       "w-full flex items-center gap-2.5 px-3.5 py-2 text-sm transition-colors",
                       selected
-                        ? "text-indigo-300 bg-indigo-500/10"
+                        ? "text-orange-300 bg-orange-500/10"
                         : "text-gray-300 hover:bg-white/5 hover:text-white"
                     )}
                   >
                     {opt.icon && <span className="shrink-0">{opt.icon}</span>}
                     <span className="flex-1 text-left">{opt.label}</span>
-                    {selected && <Check className="h-3.5 w-3.5 text-indigo-400" />}
+                    {selected && <Check className="h-3.5 w-3.5 text-orange-400" />}
                   </button>
                 );
               })}

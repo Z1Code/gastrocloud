@@ -57,7 +57,7 @@ export function StationTabs() {
                   className={cn(
                     'inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold',
                     isActive
-                      ? 'bg-indigo-500 text-white'
+                      ? 'bg-orange-500 text-white'
                       : 'bg-white/10 text-white/60'
                   )}
                 >

@@ -23,7 +23,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
           glass
             ? "bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl shadow-black/10"
             : "bg-gray-900 border border-gray-800",
-          hover && "hover:shadow-2xl hover:shadow-indigo-500/5 hover:border-white/15",
+          hover && "hover:shadow-2xl hover:shadow-orange-500/5 hover:border-white/15",
           className
         )}
         {...props}

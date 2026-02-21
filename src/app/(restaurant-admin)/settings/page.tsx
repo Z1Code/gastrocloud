@@ -71,7 +71,7 @@ export default function SettingsPage() {
         className="mb-8"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 via-rose-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/25">
             <Settings size={20} className="text-white" />
           </div>
           <div>
@@ -91,7 +91,7 @@ export default function SettingsPage() {
         className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-6"
       >
         <div className="flex items-center gap-3 mb-6">
-          <Palette size={20} className="text-indigo-400" />
+          <Palette size={20} className="text-orange-400" />
           <div>
             <h2 className="text-lg font-semibold text-white">Tema del Storefront</h2>
             <p className="text-sm text-gray-400 mt-0.5">
@@ -102,7 +102,7 @@ export default function SettingsPage() {
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 size={24} className="animate-spin text-indigo-400" />
+            <Loader2 size={24} className="animate-spin text-orange-400" />
           </div>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
@@ -116,14 +116,14 @@ export default function SettingsPage() {
                     relative text-left p-4 rounded-2xl border transition-all duration-200
                     ${
                       isSelected
-                        ? "bg-white/10 border-transparent ring-2 ring-indigo-500/70 shadow-lg shadow-indigo-500/10"
+                        ? "bg-white/10 border-transparent ring-2 ring-orange-500/70 shadow-lg shadow-orange-500/10"
                         : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-white/20"
                     }
                   `}
                 >
                   {/* Selected indicator */}
                   {isSelected && (
-                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center">
                       <Check size={14} className="text-white" />
                     </div>
                   )}
@@ -175,7 +175,7 @@ export default function SettingsPage() {
               inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
               ${
                 hasThemeChanged && !saving
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                  ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-[0.98]"
                   : "bg-white/5 text-slate-500 cursor-not-allowed"
               }
             `}
@@ -213,7 +213,7 @@ export default function SettingsPage() {
         className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6"
       >
         <div className="flex items-center gap-3 mb-6">
-          <Globe size={20} className="text-indigo-400" />
+          <Globe size={20} className="text-orange-400" />
           <div>
             <h2 className="text-lg font-semibold text-white">Dominio Personalizado</h2>
             <p className="text-sm text-gray-400 mt-0.5">
@@ -226,7 +226,7 @@ export default function SettingsPage() {
         <div className="bg-white/[0.03] border border-white/10 rounded-xl p-4 mb-5">
           <p className="text-xs text-gray-400 mb-1">Tu storefront actual</p>
           <div className="flex items-center gap-2">
-            <code className="text-sm text-indigo-300 font-mono">
+            <code className="text-sm text-orange-300 font-mono">
               gastrocloud.vercel.app/r/<span className="text-white">[slug]</span>
             </code>
             <ExternalLink size={14} className="text-slate-500" />
@@ -242,16 +242,16 @@ export default function SettingsPage() {
               value={customDomain}
               onChange={(e) => setCustomDomain(e.target.value)}
               placeholder="mirestaurante.cl"
-              className="w-full max-w-md h-10 px-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
+              className="w-full max-w-md h-10 px-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-all"
             />
           </label>
 
           {/* Instructions */}
-          <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-xl p-4 max-w-md">
-            <p className="text-xs text-indigo-300 font-medium mb-1">Instrucciones</p>
+          <div className="bg-orange-500/5 border border-orange-500/10 rounded-xl p-4 max-w-md">
+            <p className="text-xs text-orange-300 font-medium mb-1">Instrucciones</p>
             <p className="text-xs text-gray-400 leading-relaxed">
               Apunta tu dominio con un registro CNAME a{" "}
-              <code className="text-indigo-300 bg-white/5 px-1.5 py-0.5 rounded font-mono">
+              <code className="text-orange-300 bg-white/5 px-1.5 py-0.5 rounded font-mono">
                 gastrocloud.vercel.app
               </code>
             </p>

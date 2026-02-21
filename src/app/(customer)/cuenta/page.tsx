@@ -43,7 +43,7 @@ export default function CuentaPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -76,11 +76,11 @@ export default function CuentaPage() {
             <img
               src={user.image}
               alt={userName}
-              className="w-16 h-16 rounded-full object-cover ring-2 ring-indigo-100"
+              className="w-16 h-16 rounded-full object-cover ring-2 ring-orange-100"
               referrerPolicy="no-referrer"
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xl font-bold">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-rose-500 flex items-center justify-center text-white text-xl font-bold">
               {userName[0]?.toUpperCase()}
             </div>
           )}
@@ -88,7 +88,7 @@ export default function CuentaPage() {
             <h2 className="text-lg font-semibold text-slate-900">{userName}</h2>
             <p className="text-sm text-slate-500">{userEmail}</p>
             {user?.role ? (
-              <span className="inline-block mt-1 text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-medium">
+              <span className="inline-block mt-1 text-xs px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">
                 {user.role}
               </span>
             ) : (
@@ -109,30 +109,30 @@ export default function CuentaPage() {
       >
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-              <ShoppingBag size={20} className="text-indigo-600" />
+            <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+              <ShoppingBag size={20} className="text-orange-600" />
             </div>
             <h3 className="font-semibold text-slate-900">Mis Pedidos</h3>
           </div>
           <p className="text-sm text-slate-500 mb-4">
             Revisa el historial de tus pedidos y su estado actual.
           </p>
-          <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+          <button className="text-sm font-medium text-orange-600 hover:text-orange-700 flex items-center gap-1">
             Ver pedidos <ArrowRight size={14} />
           </button>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
-              <Store size={20} className="text-violet-600" />
+            <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
+              <Store size={20} className="text-rose-600" />
             </div>
             <h3 className="font-semibold text-slate-900">Restaurantes</h3>
           </div>
           <p className="text-sm text-slate-500 mb-4">
             Explora restaurantes disponibles y sus menus.
           </p>
-          <button className="text-sm font-medium text-violet-600 hover:text-violet-700 flex items-center gap-1">
+          <button className="text-sm font-medium text-rose-600 hover:text-rose-700 flex items-center gap-1">
             Explorar <ArrowRight size={14} />
           </button>
         </div>
@@ -144,7 +144,7 @@ export default function CuentaPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl p-6 text-white shadow-lg"
+          className="bg-gradient-to-r from-orange-500 to-rose-500 rounded-2xl p-6 text-white shadow-lg"
         >
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
@@ -158,11 +158,11 @@ export default function CuentaPage() {
               <button
                 onClick={handleSetup}
                 disabled={setupLoading || setupDone}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-indigo-600 font-semibold rounded-xl hover:bg-white/90 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-orange-600 font-semibold rounded-xl hover:bg-white/90 transition-colors disabled:opacity-50"
               >
                 {setupLoading ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
                     Configurando...
                   </>
                 ) : setupDone ? (

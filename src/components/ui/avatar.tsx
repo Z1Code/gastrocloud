@@ -46,9 +46,9 @@ function Avatar({
       <div
         className={cn(
           "rounded-full overflow-hidden flex items-center justify-center font-medium",
-          "bg-gradient-to-br from-indigo-500 to-violet-500 text-white",
+          "bg-gradient-to-br from-orange-500 to-rose-500 text-white",
           avatarSizes[size],
-          ring && "ring-2 ring-indigo-500/50 ring-offset-2 ring-offset-gray-900"
+          ring && "ring-2 ring-orange-500/50 ring-offset-2 ring-offset-gray-900"
         )}
       >
         {src && !imgError ? (

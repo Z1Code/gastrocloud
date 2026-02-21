@@ -34,8 +34,8 @@ const kpis = [
     unit: "",
     change: +8.3,
     icon: ShoppingBag,
-    gradient: "from-indigo-500 to-violet-500",
-    shadow: "shadow-indigo-500/25",
+    gradient: "from-orange-500 to-rose-500",
+    shadow: "shadow-orange-500/25",
   },
   {
     label: "Tiempo Promedio",
@@ -70,11 +70,11 @@ const revenueData = [
 
 /* ── Recent Orders ─────────────────────────────────────── */
 const sourceColors: Record<string, string> = {
-  Web: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
+  Web: "bg-orange-500/20 text-orange-300 border-orange-500/30",
   "Uber Eats": "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
   Rappi: "bg-orange-500/20 text-orange-300 border-orange-500/30",
   WhatsApp: "bg-green-500/20 text-green-300 border-green-500/30",
-  POS: "bg-violet-500/20 text-violet-300 border-violet-500/30",
+  POS: "bg-rose-500/20 text-rose-300 border-rose-500/30",
 };
 
 const statusColors: Record<string, string> = {
@@ -339,7 +339,7 @@ export default function DashboardPage() {
                       initial={{ width: 0 }}
                       animate={inView ? { width: `${pct}%` } : { width: 0 }}
                       transition={{ duration: 0.8, delay: 0.3 + i * 0.1 }}
-                      className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500"
+                      className="h-full rounded-full bg-gradient-to-r from-orange-500 to-rose-500"
                     />
                   </div>
                 </div>

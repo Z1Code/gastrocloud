@@ -21,14 +21,14 @@ function LoadingSpinner({ size = "md", className }: LoadingSpinnerProps) {
       <div
         className={cn(
           "absolute inset-0 rounded-full border-2 border-transparent",
-          "border-t-indigo-500 border-r-violet-500",
+          "border-t-orange-500 border-r-rose-500",
           "animate-spin"
         )}
       />
       <div
         className={cn(
           "absolute inset-1 rounded-full border-2 border-transparent",
-          "border-b-indigo-400/50 border-l-violet-400/50",
+          "border-b-orange-400/50 border-l-rose-400/50",
           "animate-spin [animation-direction:reverse] [animation-duration:0.8s]"
         )}
       />

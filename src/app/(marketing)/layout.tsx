@@ -27,7 +27,7 @@ function Navbar() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
         scrolled
-          ? "bg-slate-950/70 backdrop-blur-2xl border-b border-white/10 shadow-2xl shadow-indigo-500/5"
+          ? "bg-slate-950/70 backdrop-blur-2xl border-b border-white/10 shadow-2xl shadow-orange-500/5"
           : "bg-transparent"
       )}
     >
@@ -35,10 +35,10 @@ function Navbar() {
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-500/30 group-hover:shadow-indigo-500/50 transition-shadow">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 via-rose-500 to-amber-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-orange-500/30 group-hover:shadow-orange-500/50 transition-shadow">
               G
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-orange-400 via-rose-400 to-amber-400 bg-clip-text text-transparent">
               GastroCloud
             </span>
           </Link>
@@ -52,7 +52,7 @@ function Navbar() {
                 className="text-sm text-slate-400 hover:text-white transition-colors duration-200 relative group"
               >
                 {link.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-px bg-gradient-to-r from-indigo-500 to-violet-500 group-hover:w-full transition-all duration-300" />
+                <span className="absolute -bottom-1 left-0 w-0 h-px bg-gradient-to-r from-orange-500 to-rose-500 group-hover:w-full transition-all duration-300" />
               </a>
             ))}
           </div>
@@ -67,7 +67,7 @@ function Navbar() {
             </Link>
             <Link
               href="/register"
-              className="text-sm font-medium text-white px-5 py-2.5 rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 hover:scale-105"
+              className="text-sm font-medium text-white px-5 py-2.5 rounded-full bg-gradient-to-r from-orange-500 via-rose-500 to-amber-500 hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 hover:scale-105"
             >
               Comenzar Gratis
             </Link>
@@ -112,7 +112,7 @@ function Navbar() {
                 </Link>
                 <Link
                   href="/register"
-                  className="block text-center text-white font-medium py-3 rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500"
+                  className="block text-center text-white font-medium py-3 rounded-full bg-gradient-to-r from-orange-500 via-rose-500 to-amber-500"
                 >
                   Comenzar Gratis
                 </Link>
@@ -173,10 +173,10 @@ function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 via-rose-500 to-amber-500 flex items-center justify-center text-white font-bold text-sm">
                 G
               </div>
-              <span className="text-lg font-bold bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+              <span className="text-lg font-bold bg-gradient-to-r from-orange-400 to-rose-400 bg-clip-text text-transparent">
                 GastroCloud
               </span>
             </Link>

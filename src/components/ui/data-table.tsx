@@ -86,7 +86,7 @@ function DataTable<T extends Record<string, unknown>>({
                   <span className="inline-flex items-center gap-1">
                     {col.header}
                     {col.sortable && sortKey === col.key && (
-                      <span className="text-indigo-400">
+                      <span className="text-orange-400">
                         {sortDir === "asc" ? (
                           <ChevronUp className="h-3 w-3" />
                         ) : (

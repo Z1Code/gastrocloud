@@ -18,7 +18,7 @@ const mockData = {
 
 /* ── Funnel Config ──────────────────────────────────────── */
 const funnelConfig: Record<string, { label: string; color: string; icon: typeof Eye }> = {
-  page_view: { label: "Visitas", color: "from-indigo-500 to-violet-500", icon: Eye },
+  page_view: { label: "Visitas", color: "from-orange-500 to-rose-500", icon: Eye },
   menu_view: { label: "Menu visto", color: "from-blue-500 to-cyan-500", icon: BarChart3 },
   checkout_started: { label: "Checkout iniciado", color: "from-amber-500 to-orange-500", icon: MousePointerClick },
   order_placed: { label: "Pedidos", color: "from-emerald-500 to-teal-500", icon: ShoppingCart },
@@ -65,9 +65,9 @@ export default function StatsPage() {
   const totalVisits = eventBreakdown[0].count;
 
   const statsCards = [
-    { label: "Visitas Hoy", value: views.today, border: "border-l-indigo-500", icon: Eye },
+    { label: "Visitas Hoy", value: views.today, border: "border-l-orange-500", icon: Eye },
     { label: "Visitas esta Semana", value: views.week, border: "border-l-blue-500", icon: Eye },
-    { label: "Visitas este Mes", value: views.month, border: "border-l-violet-500", icon: Eye },
+    { label: "Visitas este Mes", value: views.month, border: "border-l-rose-500", icon: Eye },
   ];
 
   return (

@@ -45,7 +45,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               "peer w-full h-12 px-4 pt-4 pb-1 text-sm text-white rounded-xl transition-all duration-200",
               "bg-white/5 backdrop-blur-sm border border-white/10",
               "placeholder-transparent",
-              "focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 focus:bg-white/10",
+              "focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50 focus:bg-white/10",
               error &&
                 "border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50",
               iconLeft && "pl-10",
@@ -62,7 +62,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 "absolute left-4 transition-all duration-200 pointer-events-none",
                 iconLeft && "left-10",
                 focused || hasValue
-                  ? "top-1.5 text-[10px] font-medium text-indigo-400"
+                  ? "top-1.5 text-[10px] font-medium text-orange-400"
                   : "top-1/2 -translate-y-1/2 text-sm text-gray-400"
               )}
             >

@@ -63,14 +63,14 @@ function Tabs({
             {isActive && variant === "pill" && (
               <motion.div
                 layoutId="tab-pill"
-                className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-violet-500/20 border border-indigo-500/20 rounded-lg"
+                className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-rose-500/20 border border-orange-500/20 rounded-lg"
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
               />
             )}
             {isActive && variant === "underline" && (
               <motion.div
                 layoutId="tab-underline"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 to-violet-500"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-rose-500"
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
               />
             )}

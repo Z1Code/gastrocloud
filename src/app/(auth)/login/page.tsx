@@ -224,7 +224,7 @@ export default function LoginPage() {
       >
         {/* Logo / Wordmark */}
         <motion.div className="mb-10 flex flex-col items-center" variants={itemVariants}>
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-rose-600 shadow-lg shadow-orange-500/25">
             <svg
               width="32"
               height="32"

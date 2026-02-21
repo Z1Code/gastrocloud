@@ -50,7 +50,7 @@ const sidebarItems = [
 const roleBadgeColors: Record<string, string> = {
   super_admin: "bg-red-500/20 text-red-300",
   owner: "bg-amber-500/20 text-amber-300",
-  admin: "bg-indigo-500/20 text-indigo-300",
+  admin: "bg-orange-500/20 text-orange-300",
 };
 
 const roleLabels: Record<string, string> = {
@@ -139,7 +139,7 @@ export default function RestaurantAdminLayout({
             {/* Logo */}
             <div className="flex items-center h-16 px-4 border-b border-white/[0.06] shrink-0">
               <Link href="/dashboard" className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-indigo-500/25 shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 via-rose-500 to-amber-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-orange-500/25 shrink-0">
                   G
                 </div>
                 <AnimatePresence>
@@ -148,7 +148,7 @@ export default function RestaurantAdminLayout({
                       initial={{ opacity: 0, width: 0 }}
                       animate={{ opacity: 1, width: "auto" }}
                       exit={{ opacity: 0, width: 0 }}
-                      className="text-lg font-bold bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent whitespace-nowrap overflow-hidden"
+                      className="text-lg font-bold bg-gradient-to-r from-orange-400 via-rose-400 to-amber-400 bg-clip-text text-transparent whitespace-nowrap overflow-hidden"
                     >
                       GastroCloud
                     </motion.span>
@@ -181,14 +181,14 @@ export default function RestaurantAdminLayout({
                     className={cn(
                       "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative",
                       isActive
-                        ? "bg-gradient-to-r from-indigo-500/20 via-violet-500/20 to-purple-500/20 text-white shadow-lg shadow-indigo-500/5"
+                        ? "bg-gradient-to-r from-orange-500/20 via-rose-500/20 to-amber-500/20 text-white shadow-lg shadow-orange-500/5"
                         : "text-slate-400 hover:text-white hover:bg-white/[0.05]"
                     )}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="sidebar-active"
-                        className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/20 via-violet-500/20 to-purple-500/20 border border-indigo-500/20"
+                        className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500/20 via-rose-500/20 to-amber-500/20 border border-orange-500/20"
                         transition={{ type: "spring", stiffness: 350, damping: 30 }}
                       />
                     )}
@@ -196,7 +196,7 @@ export default function RestaurantAdminLayout({
                       size={20}
                       className={cn(
                         "shrink-0 relative z-10",
-                        isActive && "text-indigo-400"
+                        isActive && "text-orange-400"
                       )}
                     />
                     {showLabel && (
@@ -262,7 +262,7 @@ export default function RestaurantAdminLayout({
             <input
               type="text"
               placeholder="Buscar pedidos, clientes, productos..."
-              className="w-full h-9 pl-9 pr-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-all"
+              className="w-full h-9 pl-9 pr-4 rounded-xl bg-white/[0.05] border border-white/[0.08] text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/20 transition-all"
             />
           </div>
 
@@ -287,7 +287,7 @@ export default function RestaurantAdminLayout({
                     referrerPolicy="no-referrer"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-rose-500 flex items-center justify-center text-white text-xs font-bold">
                     {userInitials}
                   </div>
                 )}
