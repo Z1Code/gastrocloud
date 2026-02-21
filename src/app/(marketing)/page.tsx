@@ -255,13 +255,13 @@ function ProcessBreakdown() {
 
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-start" ref={containerRef}>
           {/* Left Column: Scrolling Text Content */}
-          <div className="relative">
+          <div className="relative pb-[40vh]">
             {/* Background Vertical Line */}
-            <div className="absolute left-[23px] top-6 bottom-[140px] w-1 bg-white/5 hidden md:block rounded-full" />
+            <div className="absolute left-[23px] top-6 bottom-[40vh] w-1 bg-white/5 hidden md:block rounded-full" />
             
             {/* Animated Fill Vertical Line */}
             <motion.div 
-              className="absolute left-[23px] top-6 bottom-[140px] w-1 bg-gradient-to-b from-orange-500 via-rose-500 to-amber-500 hidden md:block rounded-full origin-top"
+              className="absolute left-[23px] top-6 bottom-[40vh] w-1 bg-gradient-to-b from-orange-500 via-rose-500 to-amber-500 hidden md:block rounded-full origin-top"
               style={{ scaleY: scrollYProgress }}
             />
 
@@ -271,7 +271,7 @@ function ProcessBreakdown() {
                 <div 
                   key={step.id} 
                   className={cn(
-                    "relative md:pl-20 mb-32 last:mb-10 transition-all duration-700",
+                    "relative md:pl-20 mb-32 last:mb-0 transition-all duration-700",
                     isActive ? "opacity-100 translate-x-0" : "opacity-30 -translate-x-4"
                   )}
                 >
