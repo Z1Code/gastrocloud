@@ -78,6 +78,16 @@ function HeroSection() {
 
   return (
     <section ref={ref} className="relative min-h-[100svh] flex items-center justify-center pt-24 pb-20 overflow-hidden bg-[#0a0a0a]">
+      {/* Background Hero Image */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=2400" 
+          alt="Atmósfera de restaurante oscuro" 
+          className="w-full h-full object-cover opacity-15"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0a0a]/80 via-[#0a0a0a]/60 to-[#0a0a0a]" />
+      </div>
+
       <MeshGradient />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center text-center">
