@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -22,9 +23,11 @@ import {
   X,
   LogOut,
   ChevronDown,
+  Eye,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { useAuth } from "@/hooks/useAuth";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -38,10 +41,23 @@ const sidebarItems = [
   { label: "Inventario", href: "/inventory", icon: Package },
   { label: "Personal", href: "/staff", icon: Users },
   { label: "Reportes", href: "/reports", icon: BarChart3 },
+  { label: "Estadisticas", href: "/stats", icon: Eye },
   { label: "Facturacion", href: "/billing", icon: Receipt },
   { label: "Integraciones", href: "/integrations", icon: Plug },
   { label: "Configuracion", href: "/settings", icon: Settings },
 ];
+
+const roleBadgeColors: Record<string, string> = {
+  super_admin: "bg-red-500/20 text-red-300",
+  owner: "bg-amber-500/20 text-amber-300",
+  admin: "bg-indigo-500/20 text-indigo-300",
+};
+
+const roleLabels: Record<string, string> = {
+  super_admin: "Super Admin",
+  owner: "Owner",
+  admin: "Admin",
+};
 
 export default function RestaurantAdminLayout({
   children,
@@ -49,6 +65,7 @@ export default function RestaurantAdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -66,6 +83,16 @@ export default function RestaurantAdminLayout({
   }, []);
 
   const sidebarWidth = collapsed ? 72 : 280;
+
+  const userName = user?.name ?? "Usuario";
+  const userEmail = user?.email ?? "";
+  const userRole = user?.role ?? "admin";
+  const userInitials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <div className="min-h-screen bg-[#030014] text-white">
@@ -252,14 +279,25 @@ export default function RestaurantAdminLayout({
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-white/[0.05] transition-colors"
               >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold">
-                  JD
-                </div>
+                {user?.image ? (
+                  <img
+                    src={user.image}
+                    alt={userName}
+                    className="w-8 h-8 rounded-lg object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold">
+                    {userInitials}
+                  </div>
+                )}
                 <div className="hidden sm:block text-left">
                   <p className="text-sm font-medium text-white leading-tight">
-                    Juan Díaz
+                    {userName}
                   </p>
-                  <p className="text-xs text-slate-500 leading-tight">Admin</p>
+                  <p className="text-xs text-slate-500 leading-tight">
+                    {roleLabels[userRole] ?? userRole}
+                  </p>
                 </div>
                 <ChevronDown size={14} className="text-slate-500 hidden sm:block" />
               </button>
@@ -279,8 +317,16 @@ export default function RestaurantAdminLayout({
                       className="absolute right-0 top-full mt-2 w-56 py-2 rounded-xl bg-slate-900/95 backdrop-blur-xl border border-white/10 shadow-2xl z-50"
                     >
                       <div className="px-3 py-2 border-b border-white/[0.06]">
-                        <p className="text-sm font-medium text-white">Juan Díaz</p>
-                        <p className="text-xs text-slate-400">juan@restaurante.cl</p>
+                        <p className="text-sm font-medium text-white">{userName}</p>
+                        <p className="text-xs text-slate-400">{userEmail}</p>
+                        {userRole && (
+                          <span className={cn(
+                            "inline-block mt-1 text-xs px-2 py-0.5 rounded-md font-medium",
+                            roleBadgeColors[userRole] ?? "bg-slate-500/20 text-slate-300"
+                          )}>
+                            {roleLabels[userRole] ?? userRole}
+                          </span>
+                        )}
                       </div>
                       <div className="py-1">
                         <Link
@@ -291,7 +337,10 @@ export default function RestaurantAdminLayout({
                           <Settings size={16} />
                           Configuracion
                         </Link>
-                        <button className="flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-white/[0.05] transition-colors w-full">
+                        <button
+                          onClick={() => signOut({ callbackUrl: "/login" })}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-white/[0.05] transition-colors w-full"
+                        >
                           <LogOut size={16} />
                           Cerrar sesion
                         </button>

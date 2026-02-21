@@ -103,6 +103,34 @@ export const reservationStatusEnum = pgEnum('reservation_status', [
   'no_show',
 ]);
 
+export const paymentGatewayEnum = pgEnum('payment_gateway', [
+  'mercadopago',
+  'transbank',
+]);
+
+export const storefrontEventTypeEnum = pgEnum('storefront_event_type', [
+  'page_view',
+  'menu_view',
+  'item_click',
+  'order_placed',
+  'checkout_started',
+]);
+
+export const deliveryPlatformEnum = pgEnum('delivery_platform', [
+  'uber_eats',
+  'rappi',
+  'whatsapp',
+]);
+
+export const whatsappSessionStateEnum = pgEnum('whatsapp_session_state', [
+  'greeting',
+  'browsing_menu',
+  'adding_items',
+  'checkout',
+  'confirmed',
+  'tracking',
+]);
+
 // ─── Public: Organizations & Subscriptions ──────────────────────────────────
 
 export const organizations = pgTable(
@@ -208,12 +236,14 @@ export const restaurants = pgTable(
     website: text('website'),
     currency: text('currency').notNull().default('CLP'),
     timezone: text('timezone').notNull().default('America/Santiago'),
+    customDomain: text('custom_domain'),
     isActive: boolean('is_active').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [
     uniqueIndex('restaurants_slug_idx').on(t.slug),
+    uniqueIndex('restaurants_custom_domain_idx').on(t.customDomain),
     index('restaurants_org_idx').on(t.organizationId),
   ],
 );
@@ -400,6 +430,7 @@ export const orders = pgTable(
     discount: decimal('discount', { precision: 10, scale: 2 }).notNull().default('0'),
     total: decimal('total', { precision: 10, scale: 2 }).notNull().default('0'),
     notes: text('notes'),
+    scheduledAt: timestamp('scheduled_at', { withTimezone: true }),
     estimatedReadyAt: timestamp('estimated_ready_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
@@ -529,6 +560,7 @@ export const payments = pgTable(
     amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
     method: text('method').notNull(),
     externalReference: text('external_reference'),
+    gatewayData: jsonb('gateway_data'),
     status: paymentStatusEnum('status').notNull().default('pending'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
@@ -613,6 +645,98 @@ export const auditLog = pgTable(
   ],
 );
 
+// ─── Tenant: Payment Gateway Configs ─────────────────────────────────────────
+
+export const paymentGatewayConfigs = pgTable(
+  'payment_gateway_configs',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    gateway: paymentGatewayEnum('gateway').notNull(),
+    credentials: text('credentials').notNull(),
+    isActive: boolean('is_active').notNull().default(false),
+    isSandbox: boolean('is_sandbox').notNull().default(true),
+    lastTestedAt: timestamp('last_tested_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex('payment_gateway_configs_org_gateway_idx').on(t.organizationId, t.gateway),
+    index('payment_gateway_configs_org_idx').on(t.organizationId),
+  ],
+);
+
+// ─── Tenant: Delivery Platform Configs ─────────────────────────────────────
+
+export const deliveryPlatformConfigs = pgTable(
+  'delivery_platform_configs',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organizations.id, { onDelete: 'cascade' }),
+    platform: deliveryPlatformEnum('platform').notNull(),
+    credentials: text('credentials').notNull(),
+    externalStoreId: text('external_store_id'),
+    webhookSecret: text('webhook_secret'),
+    isActive: boolean('is_active').notNull().default(false),
+    isSandbox: boolean('is_sandbox').notNull().default(true),
+    metadata: jsonb('metadata'),
+    lastSyncAt: timestamp('last_sync_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    uniqueIndex('delivery_platform_configs_org_platform_idx').on(t.organizationId, t.platform),
+    index('delivery_platform_configs_org_idx').on(t.organizationId),
+  ],
+);
+
+// ─── Tenant: WhatsApp Sessions ─────────────────────────────────────────────
+
+export const whatsappSessions = pgTable(
+  'whatsapp_sessions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    restaurantId: uuid('restaurant_id')
+      .notNull()
+      .references(() => restaurants.id, { onDelete: 'cascade' }),
+    customerPhone: text('customer_phone').notNull(),
+    state: whatsappSessionStateEnum('state').notNull().default('greeting'),
+    cartData: jsonb('cart_data'),
+    customerName: text('customer_name'),
+    lastMessageAt: timestamp('last_message_at', { withTimezone: true }).defaultNow().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index('whatsapp_sessions_restaurant_phone_idx').on(t.restaurantId, t.customerPhone),
+    index('whatsapp_sessions_last_message_idx').on(t.lastMessageAt),
+  ],
+);
+
+// ─── Tenant: Storefront Events (Analytics) ───────────────────────────────────
+
+export const storefrontEvents = pgTable(
+  'storefront_events',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    restaurantId: uuid('restaurant_id')
+      .notNull()
+      .references(() => restaurants.id, { onDelete: 'cascade' }),
+    eventType: storefrontEventTypeEnum('event_type').notNull(),
+    metadata: jsonb('metadata'),
+    sessionId: text('session_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [
+    index('storefront_events_restaurant_idx').on(t.restaurantId),
+    index('storefront_events_type_idx').on(t.eventType),
+    index('storefront_events_created_idx').on(t.createdAt),
+  ],
+);
+
 // ─── Relations ──────────────────────────────────────────────────────────────
 
 export const organizationsRelations = relations(organizations, ({ many }) => ({
@@ -630,6 +754,8 @@ export const organizationsRelations = relations(organizations, ({ many }) => ({
   invoices: many(invoices),
   dailyReports: many(dailyReports),
   auditLog: many(auditLog),
+  paymentGatewayConfigs: many(paymentGatewayConfigs),
+  deliveryPlatformConfigs: many(deliveryPlatformConfigs),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
@@ -666,6 +792,8 @@ export const restaurantsRelations = relations(restaurants, ({ one, many }) => ({
   }),
   branches: many(branches),
   menuCategories: many(menuCategories),
+  storefrontEvents: many(storefrontEvents),
+  whatsappSessions: many(whatsappSessions),
 }));
 
 export const branchesRelations = relations(branches, ({ one, many }) => ({
@@ -861,5 +989,33 @@ export const auditLogRelations = relations(auditLog, ({ one }) => ({
   user: one(users, {
     fields: [auditLog.userId],
     references: [users.id],
+  }),
+}));
+
+export const paymentGatewayConfigsRelations = relations(paymentGatewayConfigs, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [paymentGatewayConfigs.organizationId],
+    references: [organizations.id],
+  }),
+}));
+
+export const storefrontEventsRelations = relations(storefrontEvents, ({ one }) => ({
+  restaurant: one(restaurants, {
+    fields: [storefrontEvents.restaurantId],
+    references: [restaurants.id],
+  }),
+}));
+
+export const deliveryPlatformConfigsRelations = relations(deliveryPlatformConfigs, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [deliveryPlatformConfigs.organizationId],
+    references: [organizations.id],
+  }),
+}));
+
+export const whatsappSessionsRelations = relations(whatsappSessions, ({ one }) => ({
+  restaurant: one(restaurants, {
+    fields: [whatsappSessions.restaurantId],
+    references: [restaurants.id],
   }),
 }));

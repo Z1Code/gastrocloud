@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { useAuth } from "@/hooks/useAuth";
 
 const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
@@ -134,6 +135,8 @@ const fadeUp = {
 export default function DashboardPage() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { once: true, margin: "-50px" });
+  const { user } = useAuth();
+  const firstName = user?.name?.split(" ")[0] ?? "Usuario";
 
   const chartW = 700;
   const chartH = 280;
@@ -149,7 +152,7 @@ export default function DashboardPage() {
       >
         <h1 className="text-2xl font-bold text-white">Dashboard</h1>
         <p className="text-sm text-slate-400 mt-1">
-          Bienvenido de vuelta, Juan. Aqu&iacute; tienes el resumen de hoy.
+          Bienvenido de vuelta, {firstName}. Aqui tienes el resumen de hoy.
         </p>
       </motion.div>
 

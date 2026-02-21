@@ -162,7 +162,7 @@ export default function LoginPage() {
 
           {/* Google Sign In Button */}
           <motion.button
-            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            onClick={() => signIn("google", { callbackUrl: "/redirect" })}
             className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-white px-6 py-4 text-sm font-semibold text-gray-800 transition-all duration-300 hover:bg-gray-50 hover:shadow-lg hover:shadow-white/10"
             variants={itemVariants}
             whileHover={{ scale: 1.02, y: -1 }}

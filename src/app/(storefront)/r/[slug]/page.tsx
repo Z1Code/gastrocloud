@@ -79,16 +79,19 @@ export default function RestaurantLandingPage() {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
   const quickLinks = [
-    { label: "Ver Menu", href: `${base}/menu`, gradient: "from-indigo-500 to-blue-600", emoji: "📖" },
-    { label: "Hacer Pedido", href: `${base}/menu`, gradient: "from-emerald-500 to-teal-600", emoji: "🛒" },
-    { label: "Reservar Mesa", href: "#", gradient: "from-amber-500 to-orange-600", emoji: "🪑" },
+    { label: "Ver Menu", href: `${base}/menu`, emoji: "📖" },
+    { label: "Hacer Pedido", href: `${base}/menu`, emoji: "🛒" },
+    { label: "Reservar Mesa", href: "#", emoji: "🪑" },
   ];
 
   return (
     <div className="pb-8">
       {/* Hero */}
       <div className="relative h-56 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500" />
+        <div
+          className="absolute inset-0"
+          style={{ background: `linear-gradient(135deg, var(--sf-primary), var(--sf-secondary))` }}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -122,10 +125,8 @@ export default function RestaurantLandingPage() {
             >
               <Link href={link.href}>
                 <div
-                  className={cn(
-                    "bg-gradient-to-br text-white rounded-2xl p-3 text-center shadow-lg shadow-black/5",
-                    link.gradient
-                  )}
+                  className="text-white rounded-2xl p-3 text-center shadow-lg shadow-black/5"
+                  style={{ background: `linear-gradient(135deg, var(--sf-primary), var(--sf-secondary))` }}
                 >
                   <span className="text-2xl">{link.emoji}</span>
                   <p className="text-xs font-semibold mt-1">{link.label}</p>
@@ -144,10 +145,10 @@ export default function RestaurantLandingPage() {
         variants={fadeUp}
         className="mx-4 mt-6"
       >
-        <div className="bg-gray-50 rounded-2xl p-4">
+        <div className="rounded-2xl p-4 bg-[var(--sf-surface)]">
           <div className="flex items-center gap-2 mb-3">
-            <ClockIcon className="w-5 h-5 text-indigo-600" />
-            <h2 className="font-semibold text-gray-900">Horario</h2>
+            <ClockIcon className="w-5 h-5 text-[var(--sf-primary)]" />
+            <h2 className="font-semibold text-[var(--sf-text)]">Horario</h2>
             <span className="ml-auto text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
               Abierto ahora
             </span>
@@ -155,8 +156,8 @@ export default function RestaurantLandingPage() {
           <div className="space-y-1.5">
             {hours.map((h) => (
               <div key={h.day} className="flex justify-between text-sm">
-                <span className="text-gray-500">{h.day}</span>
-                <span className="font-medium text-gray-900">{h.time}</span>
+                <span className="text-[var(--sf-text-muted)]">{h.day}</span>
+                <span className="font-medium text-[var(--sf-text)]">{h.time}</span>
               </div>
             ))}
           </div>
@@ -171,17 +172,17 @@ export default function RestaurantLandingPage() {
         variants={fadeUp}
         className="mx-4 mt-4"
       >
-        <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
-          <h2 className="font-semibold text-gray-900">Contacto</h2>
+        <div className="rounded-2xl p-4 space-y-3 bg-[var(--sf-surface)]">
+          <h2 className="font-semibold text-[var(--sf-text)]">Contacto</h2>
           <div className="flex items-start gap-3">
-            <MapPinIcon className="w-5 h-5 text-gray-400 mt-0.5 shrink-0" />
-            <p className="text-sm text-gray-600">
+            <MapPinIcon className="w-5 h-5 text-[var(--sf-text-muted)] mt-0.5 shrink-0" />
+            <p className="text-sm text-[var(--sf-text-muted)]">
               Av. Providencia 1234, Providencia, Santiago
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <PhoneIcon className="w-5 h-5 text-gray-400 shrink-0" />
-            <p className="text-sm text-gray-600">+56 2 2345 6789</p>
+            <PhoneIcon className="w-5 h-5 text-[var(--sf-text-muted)] shrink-0" />
+            <p className="text-sm text-[var(--sf-text-muted)]">+56 2 2345 6789</p>
           </div>
         </div>
       </motion.div>
@@ -194,7 +195,7 @@ export default function RestaurantLandingPage() {
         variants={fadeUp}
         className="mt-6 px-4"
       >
-        <h2 className="font-semibold text-gray-900 mb-3">Galeria</h2>
+        <h2 className="font-semibold text-[var(--sf-text)] mb-3">Galeria</h2>
         <div className="grid grid-cols-3 gap-2">
           {galleryGradients.map((g, i) => (
             <div

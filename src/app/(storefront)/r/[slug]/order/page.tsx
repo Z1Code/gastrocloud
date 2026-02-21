@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "@/stores/cartStore";
 import { clsx, type ClassValue } from "clsx";
@@ -48,10 +48,9 @@ function CheckCircleIcon({ className }: { className?: string }) {
   );
 }
 
-/* ── Tip options ───────────────────────────────────────── */
+/* ── Constants ────────────────────────────────────────── */
 
 const tipOptions = [0, 10, 15, 20];
-const pickupTimes = ["15 min", "20 min", "30 min", "45 min", "1 hora"];
 
 const itemEmojis: Record<string, string> = {
   "Lomo a lo Pobre": "🥩",
@@ -72,75 +71,143 @@ const itemEmojis: Record<string, string> = {
   "Aperol Spritz": "🥂",
 };
 
-/* ── Mock initial cart ─────────────────────────────────── */
+function generateScheduleTimes(): string[] {
+  const times: string[] = [];
+  const now = new Date();
+  // Start from next 15-min slot
+  const minutes = now.getMinutes();
+  const nextSlot = Math.ceil((minutes + 30) / 15) * 15; // at least 30 min from now
+  const start = new Date(now);
+  start.setMinutes(nextSlot, 0, 0);
 
-function useMockCart() {
-  const items = useCartStore((s) => s.items);
-  const addItem = useCartStore((s) => s.addItem);
-  const [seeded, setSeeded] = useState(false);
-
-  if (!seeded && items.length === 0) {
-    addItem({
-      menuItemId: "p1",
-      name: "Lomo a lo Pobre",
-      price: 12990,
-      quantity: 1,
-      modifiers: [],
-    });
-    addItem({
-      menuItemId: "c1",
-      name: "Pisco Sour",
-      price: 5990,
-      quantity: 2,
-      modifiers: [],
-    });
-    addItem({
-      menuItemId: "d1",
-      name: "Tiramisú",
-      price: 5990,
-      quantity: 1,
-      modifiers: [],
-    });
-    setSeeded(true);
+  for (let i = 0; i < 12; i++) {
+    const t = new Date(start.getTime() + i * 15 * 60 * 1000);
+    if (t.getHours() >= 23) break;
+    times.push(t.toTimeString().slice(0, 5)); // "HH:MM"
   }
+  return times;
 }
 
-/* ── Page ───────────────────────────────────────────────── */
+/* ── Page ────────────────────────────────────────────── */
 
 export default function OrderPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const slug = params.slug as string;
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeItem = useCartStore((s) => s.removeItem);
   const getTotal = useCartStore((s) => s.getTotal);
 
-  useMockCart();
-
   const [tipPercent, setTipPercent] = useState(10);
-  const [orderType, setOrderType] = useState<"pickup" | "dinein">("pickup");
-  const [pickupTime, setPickupTime] = useState("20 min");
+  const [orderType, setOrderType] = useState<"pickup" | "dinein" | "scheduled">("pickup");
+  const [scheduledTime, setScheduledTime] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [availableGateways, setAvailableGateways] = useState<string[]>([]);
+  const [paymentMethod, setPaymentMethod] = useState<"local" | "mercadopago" | "transbank">("local");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  const scheduleTimes = generateScheduleTimes();
+
+  // Check for payment return status
+  const paymentStatus = searchParams.get("payment");
+
+  // Fetch available gateways
+  useEffect(() => {
+    fetch(`/api/storefront/${slug}/config`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.availableGateways) {
+          setAvailableGateways(data.availableGateways);
+        }
+      })
+      .catch(() => {});
+  }, [slug]);
 
   const subtotal = getTotal();
   const tip = Math.round(subtotal * tipPercent / 100);
   const grandTotal = subtotal + tip;
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     const newErrors: Record<string, boolean> = {};
     if (!name.trim()) newErrors.name = true;
     if (!phone.trim()) newErrors.phone = true;
+    if (orderType === "scheduled" && !scheduledTime) newErrors.scheduledTime = true;
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
     setErrors({});
+    setPaymentError(null);
+
+    // If paying online, redirect to payment gateway
+    if (paymentMethod !== "local") {
+      setIsProcessing(true);
+      try {
+        const res = await fetch("/api/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            slug,
+            gateway: paymentMethod,
+            items: items.map((item) => ({
+              menuItemId: item.menuItemId,
+              name: item.name,
+              quantity: item.quantity,
+              unitPrice: item.price,
+            })),
+            customerName: name,
+            customerPhone: phone,
+            notes,
+            orderType: orderType === "scheduled" ? "pickup_scheduled" : orderType === "dinein" ? "dine_in" : "takeaway",
+            tipAmount: tip,
+            scheduledAt: orderType === "scheduled" && scheduledTime
+              ? new Date(`${new Date().toISOString().split("T")[0]}T${scheduledTime}:00`).toISOString()
+              : undefined,
+          }),
+        });
+        const data = await res.json();
+        if (data.redirectUrl) {
+          window.location.href = data.redirectUrl;
+          return;
+        }
+        setPaymentError(data.error || "Error al procesar el pago");
+      } catch {
+        setPaymentError("Error de conexion");
+      } finally {
+        setIsProcessing(false);
+      }
+      return;
+    }
+
     setConfirmed(true);
   };
+
+  // Payment return error
+  if (paymentStatus === "failure" || paymentStatus === "error") {
+    return (
+      <div className="px-4 pt-12 text-center">
+        <div className="w-24 h-24 mx-auto rounded-full bg-red-100 flex items-center justify-center">
+          <XIcon className="w-14 h-14 text-red-600" />
+        </div>
+        <h1 className="text-2xl font-bold text-[var(--sf-text)] mt-6">Error en el Pago</h1>
+        <p className="text-[var(--sf-text-muted)] mt-2">No se pudo procesar tu pago. Intenta nuevamente.</p>
+        <Link href={`/r/${slug}/order`}>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            className="mt-8 h-14 px-8 text-white font-semibold rounded-2xl bg-[var(--sf-primary)]"
+          >
+            Intentar de Nuevo
+          </motion.button>
+        </Link>
+      </div>
+    );
+  }
 
   // Success overlay
   if (confirmed) {
@@ -160,27 +227,33 @@ export default function OrderPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h1 className="text-2xl font-bold text-gray-900 mt-6">Pedido Confirmado</h1>
-          <p className="text-gray-500 mt-2">Tu orden ha sido recibida</p>
-          <div className="mt-6 inline-flex items-center gap-2 bg-gray-100 rounded-2xl px-6 py-3">
-            <span className="text-sm text-gray-500">Orden</span>
-            <span className="text-xl font-bold text-gray-900">#0234</span>
+          <h1 className="text-2xl font-bold text-[var(--sf-text)] mt-6">Pedido Confirmado</h1>
+          <p className="text-[var(--sf-text-muted)] mt-2">Tu orden ha sido recibida</p>
+          <div className="mt-6 inline-flex items-center gap-2 rounded-2xl px-6 py-3 bg-[var(--sf-surface)]">
+            <span className="text-sm text-[var(--sf-text-muted)]">Orden</span>
+            <span className="text-xl font-bold text-[var(--sf-text)]">#0234</span>
           </div>
-          <div className="mt-4 bg-indigo-50 rounded-2xl px-6 py-4">
-            <p className="text-sm text-indigo-600 font-medium">Tiempo estimado</p>
-            <p className="text-2xl font-bold text-indigo-700 mt-1">~20 minutos</p>
+          {orderType === "scheduled" && scheduledTime && (
+            <div className="mt-4 rounded-2xl px-6 py-4" style={{ background: `color-mix(in srgb, var(--sf-primary) 10%, var(--sf-bg))` }}>
+              <p className="text-sm font-medium text-[var(--sf-primary)]">Hora programada</p>
+              <p className="text-2xl font-bold text-[var(--sf-text)] mt-1">{scheduledTime} hrs</p>
+            </div>
+          )}
+          <div className="mt-4 rounded-2xl px-6 py-4" style={{ background: `color-mix(in srgb, var(--sf-primary) 10%, var(--sf-bg))` }}>
+            <p className="text-sm font-medium text-[var(--sf-primary)]">Tiempo estimado</p>
+            <p className="text-2xl font-bold text-[var(--sf-text)] mt-1">~20 minutos</p>
           </div>
           <div className="mt-8 space-y-3">
             <Link href={`/r/${slug}/track`}>
               <motion.button
                 whileTap={{ scale: 0.97 }}
-                className="w-full h-14 bg-indigo-600 text-white font-semibold rounded-2xl"
+                className="w-full h-14 text-white font-semibold rounded-2xl bg-[var(--sf-primary)]"
               >
                 Seguir mi pedido
               </motion.button>
             </Link>
             <Link href={`/r/${slug}/menu`}>
-              <button className="w-full h-12 text-indigo-600 font-medium">
+              <button className="w-full h-12 font-medium text-[var(--sf-primary)]">
                 Volver al menú
               </button>
             </Link>
@@ -195,12 +268,12 @@ export default function OrderPage() {
     return (
       <div className="px-4 pt-16 text-center">
         <span className="text-6xl">🛒</span>
-        <h2 className="text-xl font-bold text-gray-900 mt-6">Tu carrito está vacío</h2>
-        <p className="text-gray-500 mt-2">Agrega platos desde el menú para comenzar</p>
+        <h2 className="text-xl font-bold text-[var(--sf-text)] mt-6">Tu carrito está vacío</h2>
+        <p className="text-[var(--sf-text-muted)] mt-2">Agrega platos desde el menú para comenzar</p>
         <Link href={`/r/${slug}/menu`}>
           <motion.button
             whileTap={{ scale: 0.97 }}
-            className="mt-8 h-14 px-8 bg-indigo-600 text-white font-semibold rounded-2xl"
+            className="mt-8 h-14 px-8 text-white font-semibold rounded-2xl bg-[var(--sf-primary)]"
           >
             Ver Menú
           </motion.button>
@@ -216,11 +289,11 @@ export default function OrderPage() {
       className="px-4 pt-4 pb-8"
     >
       {/* Back button */}
-      <Link href={`/r/${slug}/menu`} className="inline-flex items-center gap-1 text-sm text-indigo-600 font-medium mb-4">
+      <Link href={`/r/${slug}/menu`} className="inline-flex items-center gap-1 text-sm font-medium mb-4 text-[var(--sf-primary)]">
         &larr; Volver al menú
       </Link>
 
-      <h1 className="text-xl font-bold text-gray-900 mb-4">Tu Pedido</h1>
+      <h1 className="text-xl font-bold text-[var(--sf-text)] mb-4">Tu Pedido</h1>
 
       {/* Cart items */}
       <div className="space-y-3 mb-6">
@@ -234,54 +307,54 @@ export default function OrderPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 60, transition: { duration: 0.2 } }}
-                className="bg-white rounded-2xl shadow-lg shadow-black/5 border border-gray-100 p-4"
+                className="rounded-2xl shadow-lg shadow-black/5 border p-4 bg-[var(--sf-surface)] border-[var(--sf-text)]/10"
               >
                 <div className="flex gap-3">
-                  {/* Placeholder */}
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center text-2xl shrink-0">
+                  <div
+                    className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl shrink-0"
+                    style={{ background: `linear-gradient(135deg, color-mix(in srgb, var(--sf-primary) 10%, var(--sf-bg)), color-mix(in srgb, var(--sf-secondary) 10%, var(--sf-bg)))` }}
+                  >
                     {itemEmojis[item.name] || "🍽️"}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between">
-                      <h3 className="font-semibold text-gray-900 text-sm">{item.name}</h3>
+                      <h3 className="font-semibold text-[var(--sf-text)] text-sm">{item.name}</h3>
                       <button
                         onClick={() => removeItem(item.id)}
-                        className="p-1 -mr-1 text-gray-300 hover:text-red-500 transition-colors"
+                        className="p-1 -mr-1 text-[var(--sf-text-muted)] hover:text-red-500 transition-colors"
                       >
                         <XIcon className="w-4 h-4" />
                       </button>
                     </div>
 
                     {item.modifiers.length > 0 && (
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-[var(--sf-text-muted)] mt-0.5">
                         {item.modifiers.map((m) => m.name).join(", ")}
                       </p>
                     )}
 
                     <div className="flex items-center justify-between mt-2">
-                      {/* Quantity controls */}
                       <div className="flex items-center gap-2">
                         <motion.button
                           whileTap={{ scale: 0.85 }}
                           onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors bg-[var(--sf-bg)] text-[var(--sf-text)]"
                         >
                           <MinusIcon className="w-4 h-4" />
                         </motion.button>
-                        <span className="w-6 text-center font-semibold text-gray-900 text-sm">
+                        <span className="w-6 text-center font-semibold text-[var(--sf-text)] text-sm">
                           {item.quantity}
                         </span>
                         <motion.button
                           whileTap={{ scale: 0.85 }}
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"
+                          className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors bg-[var(--sf-bg)] text-[var(--sf-text)]"
                         >
                           <PlusIcon className="w-4 h-4" />
                         </motion.button>
                       </div>
-
-                      <span className="font-semibold text-gray-900 text-sm">{formatCLP(itemTotal)}</span>
+                      <span className="font-semibold text-[var(--sf-text)] text-sm">{formatCLP(itemTotal)}</span>
                     </div>
                   </div>
                 </div>
@@ -292,17 +365,17 @@ export default function OrderPage() {
       </div>
 
       {/* Order summary */}
-      <div className="bg-white rounded-2xl shadow-lg shadow-black/5 border border-gray-100 p-4 mb-4 space-y-4">
-        <h2 className="font-semibold text-gray-900">Resumen</h2>
+      <div className="rounded-2xl shadow-lg shadow-black/5 border p-4 mb-4 space-y-4 bg-[var(--sf-surface)] border-[var(--sf-text)]/10">
+        <h2 className="font-semibold text-[var(--sf-text)]">Resumen</h2>
 
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Subtotal</span>
-          <span className="font-medium text-gray-900">{formatCLP(subtotal)}</span>
+          <span className="text-[var(--sf-text-muted)]">Subtotal</span>
+          <span className="font-medium text-[var(--sf-text)]">{formatCLP(subtotal)}</span>
         </div>
 
         {/* Tip */}
         <div>
-          <p className="text-sm text-gray-500 mb-2">Propina</p>
+          <p className="text-sm text-[var(--sf-text-muted)] mb-2">Propina</p>
           <div className="flex gap-2">
             {tipOptions.map((pct) => (
               <motion.button
@@ -312,8 +385,8 @@ export default function OrderPage() {
                 className={cn(
                   "flex-1 h-10 rounded-xl text-sm font-medium transition-colors",
                   tipPercent === pct
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "text-white bg-[var(--sf-primary)]"
+                    : "text-[var(--sf-text)] bg-[var(--sf-bg)] hover:opacity-80"
                 )}
               >
                 {pct}%
@@ -322,28 +395,30 @@ export default function OrderPage() {
           </div>
         </div>
 
-        <div className="flex justify-between pt-3 border-t border-gray-100">
-          <span className="font-semibold text-gray-900">Total</span>
-          <span className="font-bold text-lg text-gray-900">{formatCLP(grandTotal)}</span>
+        <div className="flex justify-between pt-3 border-t border-[var(--sf-text)]/10">
+          <span className="font-semibold text-[var(--sf-text)]">Total</span>
+          <span className="font-bold text-lg text-[var(--sf-text)]">{formatCLP(grandTotal)}</span>
         </div>
       </div>
 
       {/* Order type */}
-      <div className="bg-white rounded-2xl shadow-lg shadow-black/5 border border-gray-100 p-4 mb-4 space-y-3">
-        <h2 className="font-semibold text-gray-900">Tipo de pedido</h2>
-        <div className="flex gap-3">
+      <div className="rounded-2xl shadow-lg shadow-black/5 border p-4 mb-4 space-y-3 bg-[var(--sf-surface)] border-[var(--sf-text)]/10">
+        <h2 className="font-semibold text-[var(--sf-text)]">Tipo de pedido</h2>
+        <div className="flex gap-2">
           {[
-            { key: "pickup" as const, label: "Retiro en Local" },
+            { key: "pickup" as const, label: "Retiro" },
             { key: "dinein" as const, label: "Comer aquí" },
+            { key: "scheduled" as const, label: "Vengo a las..." },
           ].map((opt) => (
             <label
               key={opt.key}
               className={cn(
-                "flex-1 flex items-center justify-center gap-2 h-12 rounded-xl border-2 cursor-pointer transition-colors text-sm font-medium",
+                "flex-1 flex items-center justify-center gap-1 h-12 rounded-xl border-2 cursor-pointer transition-colors text-sm font-medium",
                 orderType === opt.key
-                  ? "border-indigo-600 bg-indigo-50 text-indigo-700"
-                  : "border-gray-200 text-gray-600 hover:border-gray-300"
+                  ? "border-[var(--sf-primary)] text-[var(--sf-primary)]"
+                  : "border-[var(--sf-text)]/20 text-[var(--sf-text-muted)] hover:border-[var(--sf-text)]/30"
               )}
+              style={orderType === opt.key ? { backgroundColor: `color-mix(in srgb, var(--sf-primary) 10%, var(--sf-bg))` } : undefined}
             >
               <input
                 type="radio"
@@ -358,39 +433,98 @@ export default function OrderPage() {
           ))}
         </div>
 
-        {/* Pickup time */}
-        {orderType === "pickup" && (
+        {/* Scheduled time picker */}
+        {orderType === "scheduled" && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
           >
-            <label className="block text-sm text-gray-500 mb-1">Tiempo de retiro</label>
+            <label className="block text-sm text-[var(--sf-text-muted)] mb-1">Vengo a las...</label>
             <select
-              value={pickupTime}
-              onChange={(e) => setPickupTime(e.target.value)}
-              className="w-full h-12 rounded-xl bg-gray-100 px-4 text-gray-900 border-0 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+              value={scheduledTime}
+              onChange={(e) => { setScheduledTime(e.target.value); setErrors((p) => ({ ...p, scheduledTime: false })); }}
+              className={cn(
+                "w-full h-12 rounded-xl px-4 border-0 focus:outline-none focus:ring-2 focus:ring-[var(--sf-primary)]/30 bg-[var(--sf-bg)] text-[var(--sf-text)]",
+                errors.scheduledTime && "ring-2 ring-red-400"
+              )}
             >
-              {pickupTimes.map((t) => (
-                <option key={t} value={t}>{t}</option>
+              <option value="">Selecciona una hora</option>
+              {scheduleTimes.map((t) => (
+                <option key={t} value={t}>{t} hrs</option>
               ))}
             </select>
+            {errors.scheduledTime && <p className="text-xs text-red-500 mt-1">Selecciona una hora</p>}
           </motion.div>
         )}
       </div>
 
+      {/* Payment method - only show if gateways are available */}
+      {availableGateways.length > 0 && (
+        <div className="rounded-2xl shadow-lg shadow-black/5 border p-4 mb-4 space-y-3 bg-[var(--sf-surface)] border-[var(--sf-text)]/10">
+          <h2 className="font-semibold text-[var(--sf-text)]">Método de pago</h2>
+          <div className="space-y-2">
+            <label
+              className={cn(
+                "flex items-center gap-3 h-14 rounded-xl border-2 cursor-pointer px-4 transition-colors",
+                paymentMethod === "local"
+                  ? "border-[var(--sf-primary)]"
+                  : "border-[var(--sf-text)]/20"
+              )}
+              style={paymentMethod === "local" ? { backgroundColor: `color-mix(in srgb, var(--sf-primary) 10%, var(--sf-bg))` } : undefined}
+            >
+              <input type="radio" name="payment" value="local" checked={paymentMethod === "local"} onChange={() => setPaymentMethod("local")} className="sr-only" />
+              <span className="text-xl">💵</span>
+              <span className="text-sm font-medium text-[var(--sf-text)]">Pagar en local</span>
+            </label>
+
+            {availableGateways.includes("mercadopago") && (
+              <label
+                className={cn(
+                  "flex items-center gap-3 h-14 rounded-xl border-2 cursor-pointer px-4 transition-colors",
+                  paymentMethod === "mercadopago"
+                    ? "border-[var(--sf-primary)]"
+                    : "border-[var(--sf-text)]/20"
+                )}
+                style={paymentMethod === "mercadopago" ? { backgroundColor: `color-mix(in srgb, var(--sf-primary) 10%, var(--sf-bg))` } : undefined}
+              >
+                <input type="radio" name="payment" value="mercadopago" checked={paymentMethod === "mercadopago"} onChange={() => setPaymentMethod("mercadopago")} className="sr-only" />
+                <span className="text-xl">💳</span>
+                <span className="text-sm font-medium text-[var(--sf-text)]">Pagar con MercadoPago</span>
+              </label>
+            )}
+
+            {availableGateways.includes("transbank") && (
+              <label
+                className={cn(
+                  "flex items-center gap-3 h-14 rounded-xl border-2 cursor-pointer px-4 transition-colors",
+                  paymentMethod === "transbank"
+                    ? "border-[var(--sf-primary)]"
+                    : "border-[var(--sf-text)]/20"
+                )}
+                style={paymentMethod === "transbank" ? { backgroundColor: `color-mix(in srgb, var(--sf-primary) 10%, var(--sf-bg))` } : undefined}
+              >
+                <input type="radio" name="payment" value="transbank" checked={paymentMethod === "transbank"} onChange={() => setPaymentMethod("transbank")} className="sr-only" />
+                <span className="text-xl">🏦</span>
+                <span className="text-sm font-medium text-[var(--sf-text)]">Pagar con Webpay</span>
+              </label>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Customer form */}
-      <div className="bg-white rounded-2xl shadow-lg shadow-black/5 border border-gray-100 p-4 mb-6 space-y-3">
-        <h2 className="font-semibold text-gray-900">Tus datos</h2>
+      <div className="rounded-2xl shadow-lg shadow-black/5 border p-4 mb-6 space-y-3 bg-[var(--sf-surface)] border-[var(--sf-text)]/10">
+        <h2 className="font-semibold text-[var(--sf-text)]">Tus datos</h2>
 
         <div>
-          <label className="block text-sm text-gray-500 mb-1">Nombre *</label>
+          <label className="block text-sm text-[var(--sf-text-muted)] mb-1">Nombre *</label>
           <input
             type="text"
             value={name}
             onChange={(e) => { setName(e.target.value); setErrors((p) => ({ ...p, name: false })); }}
             className={cn(
-              "w-full h-12 rounded-xl bg-gray-100 px-4 text-gray-900 border-0 focus:outline-none focus:ring-2 focus:ring-indigo-500/30",
+              "w-full h-12 rounded-xl px-4 border-0 focus:outline-none focus:ring-2 focus:ring-[var(--sf-primary)]/30 bg-[var(--sf-bg)] text-[var(--sf-text)]",
               errors.name && "ring-2 ring-red-400"
             )}
             placeholder="Tu nombre"
@@ -399,13 +533,13 @@ export default function OrderPage() {
         </div>
 
         <div>
-          <label className="block text-sm text-gray-500 mb-1">Teléfono *</label>
+          <label className="block text-sm text-[var(--sf-text-muted)] mb-1">Teléfono *</label>
           <input
             type="tel"
             value={phone}
             onChange={(e) => { setPhone(e.target.value); setErrors((p) => ({ ...p, phone: false })); }}
             className={cn(
-              "w-full h-12 rounded-xl bg-gray-100 px-4 text-gray-900 border-0 focus:outline-none focus:ring-2 focus:ring-indigo-500/30",
+              "w-full h-12 rounded-xl px-4 border-0 focus:outline-none focus:ring-2 focus:ring-[var(--sf-primary)]/30 bg-[var(--sf-bg)] text-[var(--sf-text)]",
               errors.phone && "ring-2 ring-red-400"
             )}
             placeholder="+56 9 1234 5678"
@@ -414,24 +548,36 @@ export default function OrderPage() {
         </div>
 
         <div>
-          <label className="block text-sm text-gray-500 mb-1">Notas (opcional)</label>
+          <label className="block text-sm text-[var(--sf-text-muted)] mb-1">Notas (opcional)</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="w-full rounded-xl bg-gray-100 px-4 py-3 text-gray-900 border-0 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 resize-none"
+            className="w-full rounded-xl px-4 py-3 border-0 focus:outline-none focus:ring-2 focus:ring-[var(--sf-primary)]/30 resize-none bg-[var(--sf-bg)] text-[var(--sf-text)]"
             placeholder="Alguna indicación especial..."
           />
         </div>
       </div>
 
+      {/* Payment error */}
+      {paymentError && (
+        <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
+          {paymentError}
+        </div>
+      )}
+
       {/* Confirm button */}
       <motion.button
         whileTap={{ scale: 0.97 }}
         onClick={handleConfirm}
-        className="w-full h-14 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-lg rounded-2xl shadow-lg shadow-indigo-500/30 transition-all"
+        disabled={isProcessing}
+        className={cn(
+          "w-full h-14 text-white font-bold text-lg rounded-2xl shadow-lg transition-all",
+          isProcessing ? "opacity-60 cursor-not-allowed" : ""
+        )}
+        style={{ background: `linear-gradient(to right, var(--sf-primary), var(--sf-secondary))` }}
       >
-        Confirmar Pedido · {formatCLP(grandTotal)}
+        {isProcessing ? "Procesando..." : `Confirmar Pedido · ${formatCLP(grandTotal)}`}
       </motion.button>
     </motion.div>
   );

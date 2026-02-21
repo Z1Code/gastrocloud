@@ -80,6 +80,7 @@ export interface Order {
   discount: number;
   total: number;
   notes?: string;
+  scheduledAt?: Date;
   estimatedReadyAt?: Date;
   items: OrderItem[];
   createdAt: Date;
@@ -187,4 +188,143 @@ export interface Restaurant {
   address?: string;
   phone?: string;
   currency: string;
+  customDomain?: string;
+}
+
+// Payment Gateway
+export type PaymentGateway = 'mercadopago' | 'transbank';
+
+export interface PaymentGatewayConfig {
+  id: string;
+  organizationId: string;
+  gateway: PaymentGateway;
+  credentials: Record<string, string>;
+  isActive: boolean;
+  isSandbox: boolean;
+  lastTestedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Storefront Config (public, no secrets)
+export interface StorefrontConfig {
+  restaurantName: string;
+  theme: {
+    key: string;
+    name: string;
+    colors: {
+      primary: string;
+      secondary: string;
+      accent: string;
+      bg: string;
+      surface: string;
+      text: string;
+      textMuted: string;
+    };
+    font: string;
+    radius: string;
+  };
+  availableGateways: PaymentGateway[];
+  currency: string;
+}
+
+// Storefront Analytics
+export type StorefrontEventType = 'page_view' | 'menu_view' | 'item_click' | 'order_placed' | 'checkout_started';
+
+export interface StorefrontEvent {
+  id: string;
+  restaurantId: string;
+  eventType: StorefrontEventType;
+  metadata?: Record<string, unknown>;
+  sessionId?: string;
+  createdAt: Date;
+}
+
+// Delivery Platforms
+export type DeliveryPlatform = 'uber_eats' | 'rappi' | 'whatsapp';
+
+export interface DeliveryPlatformConfig {
+  id: string;
+  organizationId: string;
+  platform: DeliveryPlatform;
+  credentials: Record<string, string>;
+  externalStoreId?: string;
+  webhookSecret?: string;
+  isActive: boolean;
+  isSandbox: boolean;
+  metadata?: Record<string, unknown>;
+  lastSyncAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// WhatsApp Session
+export type WhatsAppSessionState = 'greeting' | 'browsing_menu' | 'adding_items' | 'checkout' | 'confirmed' | 'tracking';
+
+export interface WhatsAppSession {
+  id: string;
+  restaurantId: string;
+  customerPhone: string;
+  state: WhatsAppSessionState;
+  cartData?: WhatsAppCartData;
+  customerName?: string;
+  lastMessageAt: Date;
+  createdAt: Date;
+}
+
+export interface WhatsAppCartItem {
+  menuItemId: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  modifiers?: { name: string; price: number }[];
+}
+
+export interface WhatsAppCartData {
+  items: WhatsAppCartItem[];
+  orderType?: 'pickup' | 'delivery';
+  customerName?: string;
+  customerPhone?: string;
+  deliveryAddress?: string;
+  notes?: string;
+}
+
+// External order structures
+export interface UberEatsExternalOrder {
+  id: string;
+  display_id: string;
+  store: { id: string; name: string };
+  eater: { first_name: string; phone: string };
+  cart: {
+    items: {
+      title: string;
+      quantity: number;
+      price: { unit_price: { amount: number; currency_code: string } };
+      selected_modifier_groups?: {
+        items: { title: string; price: { unit_price: { amount: number } }; quantity: number }[];
+      }[];
+      external_data?: string;
+    }[];
+  };
+  payment: { charges: { total: { amount: number }; sub_total: { amount: number }; tax: { amount: number } } };
+  type: string;
+  estimated_ready_for_pickup_at?: string;
+}
+
+export interface RappiExternalOrder {
+  order_id: string;
+  store_id: string;
+  client: { name: string; phone: string };
+  items: {
+    name: string;
+    quantity: number;
+    unit_price: number;
+    toppings?: { name: string; price: number }[];
+    external_id?: string;
+  }[];
+  total_value: number;
+  subtotal: number;
+  taxes: number;
+  delivery_type: string;
+  created_at: string;
 }
