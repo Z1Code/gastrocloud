@@ -199,16 +199,16 @@ function ProcessBreakdown() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start start", "end end"],
+    offset: ["start center", "end center"],
   });
 
   const [activeStep, setActiveStep] = useState(0);
 
-  // Sync scroll progress to active step — 3 equal zones
+  // Sync scroll progress to active step based on progress thresholds
   useEffect(() => {
     const unsubscribe = scrollYProgress.onChange((v) => {
-      if (v < 0.33) setActiveStep(0);
-      else if (v < 0.66) setActiveStep(1);
+      if (v < 0.3) setActiveStep(0);
+      else if (v < 0.65) setActiveStep(1);
       else setActiveStep(2);
     });
     return () => unsubscribe();
@@ -255,32 +255,33 @@ function ProcessBreakdown() {
 
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-24 items-start" ref={containerRef}>
           {/* Left Column: Scrolling Text Content */}
-          <div className="relative pb-[60vh]">
+          <div className="relative pb-[40vh]">
             {/* Background Vertical Line */}
-            <div className="absolute left-[23px] top-6 bottom-[60vh] w-1 bg-white/5 hidden md:block rounded-full" />
+            <div className="absolute left-[23px] top-6 bottom-[40vh] w-1 bg-white/5 hidden md:block rounded-full" />
 
             {/* Animated Fill Vertical Line */}
             <motion.div
-              className="absolute left-[23px] top-6 bottom-[60vh] w-1 bg-gradient-to-b from-orange-500 via-rose-500 to-amber-500 hidden md:block rounded-full origin-top"
+              className="absolute left-[23px] top-6 bottom-[40vh] w-1 bg-gradient-to-b from-orange-500 via-rose-500 to-amber-500 hidden md:block rounded-full origin-top"
               style={{ scaleY: scrollYProgress }}
             />
 
             {steps.map((step, index) => {
               const isActive = activeStep >= index;
+              const isCurrentlyActive = activeStep === index;
               return (
                 <div 
                   key={step.id} 
                   className={cn(
-                    "relative md:pl-20 mb-32 last:mb-0 transition-all duration-700",
+                    "relative md:pl-20 transition-all duration-700 flex flex-col justify-center min-h-[40vh] py-12",
                     isActive ? "opacity-100 translate-x-0" : "opacity-30 -translate-x-4"
                   )}
                 >
                   {/* Node */}
                   <div className={cn(
-                    "hidden md:flex absolute left-0 top-1 w-12 h-12 rounded-full border-4 border-[#050505] items-center justify-center transition-all duration-500",
-                    isActive 
+                    "hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border-4 border-[#050505] items-center justify-center transition-all duration-500",
+                    isCurrentlyActive 
                       ? "bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.6)] scale-110" 
-                      : "bg-slate-800 scale-100"
+                      : isActive ? "bg-orange-500" : "bg-slate-800 scale-100"
                   )}>
                     <step.icon className={cn("w-5 h-5 transition-colors duration-500", isActive ? "text-white" : "text-slate-400")} />
                   </div>
