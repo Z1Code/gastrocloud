@@ -4,6 +4,10 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { orders } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
+import { syncOrderStatusToDeliveryPlatform } from "@/lib/delivery/status-sync";
+import { sendOrderStatusUpdate } from "@/lib/delivery/whatsapp";
+import { getDeliveryConfig } from "@/lib/delivery";
+import type { OrderSource } from "@/types";
 
 const validTransitions: Record<string, string[]> = {
   pending: ["accepted"],
@@ -80,6 +84,39 @@ export async function PATCH(
     .set({ status: newStatus, updatedAt: new Date() })
     .where(and(eq(orders.id, id), eq(orders.organizationId, organizationId)))
     .returning();
+
+  // Fire-and-forget sync to delivery platform
+  const deliverySources = ['uber_eats', 'rappi', 'whatsapp'];
+  if (deliverySources.includes(order.source)) {
+    void syncOrderStatusToDeliveryPlatform({
+      orderId: order.id,
+      organizationId: order.organizationId,
+      source: order.source as OrderSource,
+      externalOrderId: order.externalOrderId ?? undefined,
+      newStatus,
+      customerPhone: order.customerPhone ?? undefined,
+    });
+  }
+
+  // WhatsApp notification for ANY order with a phone number
+  if (order.customerPhone) {
+    void (async () => {
+      try {
+        const waConfig = await getDeliveryConfig(order.organizationId, 'whatsapp');
+        if (waConfig) {
+          await sendOrderStatusUpdate(
+            waConfig.credentials.phone_number_id,
+            waConfig.credentials.access_token,
+            order.customerPhone!,
+            order.id.slice(-6),
+            newStatus,
+          );
+        }
+      } catch (err) {
+        console.error('[whatsapp-notify] Failed:', err);
+      }
+    })();
+  }
 
   return NextResponse.json(updated);
 }
