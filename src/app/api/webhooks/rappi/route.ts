@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     if (!signature) {
       console.error('[Rappi Webhook] Missing Rappi-Signature header');
-      return NextResponse.json({ status: 'ok' }, { status: 200 });
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
     }
 
     // Find the matching Rappi config by verifying signature against all active configs
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     if (!matchedConfig) {
       console.error('[Rappi Webhook] No matching config found for signature');
-      return NextResponse.json({ status: 'ok' }, { status: 200 });
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     const body = JSON.parse(rawBody);
@@ -202,15 +202,22 @@ async function handleNewOrder(
     })
     .returning();
 
-  // Create order items by matching names
+  // Create order items by matching names (batch insert)
   if (items && newOrder) {
+    const itemsToInsert: Array<{
+      orderId: string;
+      menuItemId: string;
+      quantity: number;
+      unitPrice: string;
+    }> = [];
+
     for (const item of items) {
       const matchedItem = restaurantMenuItems.find(
         (mi) => mi.name.toLowerCase() === item.name.toLowerCase(),
       );
 
       if (matchedItem) {
-        await db.insert(orderItems).values({
+        itemsToInsert.push({
           orderId: newOrder.id,
           menuItemId: matchedItem.id,
           quantity: item.quantity,
@@ -219,6 +226,10 @@ async function handleNewOrder(
       } else {
         console.error(`[Rappi Webhook] No matching menu item for: ${item.name}`);
       }
+    }
+
+    if (itemsToInsert.length > 0) {
+      await db.insert(orderItems).values(itemsToInsert);
     }
   }
 }

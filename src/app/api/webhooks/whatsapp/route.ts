@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       return metadata?.verify_token === token;
     }) || (envToken && envToken === token);
 
-    if (isValid) {
+    if (isValid && challenge) {
       return new NextResponse(challenge, { status: 200 });
     }
   }
@@ -326,8 +326,8 @@ export async function POST(request: NextRequest) {
       if (messageId) {
         await markMessageAsRead(
           phoneNumberId,
-          messageId,
           credentials.access_token ?? credentials.accessToken ?? '',
+          messageId,
         );
       }
     } catch (readError) {
