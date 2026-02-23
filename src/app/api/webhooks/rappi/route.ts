@@ -173,6 +173,18 @@ async function handleNewOrder(
   const totalAmount = totals?.total ? String(totals.total) : '0';
   const subtotalAmount = totals?.subtotal ? String(totals.subtotal) : totalAmount;
 
+  // Check for duplicate order
+  const existingOrder = await db
+    .select({ id: orders.id })
+    .from(orders)
+    .where(eq(orders.externalOrderId, rappiOrderId))
+    .limit(1);
+
+  if (existingOrder.length > 0) {
+    console.log(`[Rappi Webhook] Duplicate order skipped: ${rappiOrderId}`);
+    return;
+  }
+
   // Create the order
   const [newOrder] = await db
     .insert(orders)

@@ -152,6 +152,18 @@ async function handleNewOrder(
     ? String(payment.charges.total.amount / 100)
     : '0';
 
+  // Check for duplicate order
+  const existingOrder = await db
+    .select({ id: orders.id })
+    .from(orders)
+    .where(eq(orders.externalOrderId, uberOrderId))
+    .limit(1);
+
+  if (existingOrder.length > 0) {
+    console.log(`[UberEats Webhook] Duplicate order skipped: ${uberOrderId}`);
+    return;
+  }
+
   // Create the order
   const [newOrder] = await db
     .insert(orders)

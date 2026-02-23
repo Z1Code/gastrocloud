@@ -9,7 +9,7 @@ import {
   restaurants,
   whatsappSessions,
 } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, gte } from 'drizzle-orm';
 import { decrypt } from '@/lib/encryption';
 import { verifyWhatsAppSignature, sendOrderConfirmation, markMessageAsRead } from '@/lib/delivery/whatsapp';
 import { handleWhatsAppMessage } from '@/lib/delivery/whatsapp-bot';
@@ -417,6 +417,26 @@ async function createOrderFromCart({
 
     if (resolvedItems.length === 0) {
       console.error('[WhatsApp Webhook] No valid items to create order');
+      return;
+    }
+
+    // Check for duplicate order (same phone, same source, within last 1 minute)
+    const oneMinuteAgo = new Date(Date.now() - 60_000);
+    const recentOrder = await db
+      .select({ id: orders.id })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.customerPhone, customerPhone),
+          eq(orders.source, 'whatsapp'),
+          eq(orders.organizationId, organizationId),
+          gte(orders.createdAt, oneMinuteAgo),
+        ),
+      )
+      .limit(1);
+
+    if (recentOrder.length > 0) {
+      console.log(`[WhatsApp Webhook] Duplicate order skipped for phone: ${customerPhone}`);
       return;
     }
 
