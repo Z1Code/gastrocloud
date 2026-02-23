@@ -66,7 +66,7 @@ export function SetupChecklist({ progress }: { progress: SetupProgress }) {
     {
       label: "Agrega tus mesas",
       description: "Configura mesas y genera códigos QR",
-      href: "/settings",
+      href: "/tables",
       icon: Grid3X3,
       done: progress.hasTables,
     },
