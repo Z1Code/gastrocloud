@@ -18,6 +18,14 @@ export async function middleware(request: NextRequest) {
 
   const role = token.role as string | undefined;
 
+  // Onboarding: allow auth users without role, redirect those with role
+  if (pathname.startsWith("/onboarding")) {
+    if (role) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.next();
+  }
+
   // Admin routes: /dashboard, /menu, /orders, /staff, /settings, etc.
   if (
     pathname.startsWith("/dashboard") ||
@@ -70,5 +78,6 @@ export const config = {
     "/integrations/:path*",
     "/stats/:path*",
     "/cuenta/:path*",
+    "/onboarding/:path*",
   ],
 };
