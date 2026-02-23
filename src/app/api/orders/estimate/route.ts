@@ -1,15 +1,29 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { orders } from "@/db/schema";
+import { orders, restaurants } from "@/db/schema";
 import { eq, and, inArray, desc, sql } from "drizzle-orm";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const orgId = searchParams.get("orgId");
+  const slug = searchParams.get("slug");
+  // Keep backward compatibility with orgId for now
+  const orgIdParam = searchParams.get("orgId");
 
-  if (!orgId) {
+  let organizationId: string | null = null;
+
+  if (slug) {
+    const [restaurant] = await db
+      .select({ organizationId: restaurants.organizationId })
+      .from(restaurants)
+      .where(eq(restaurants.slug, slug));
+    organizationId = restaurant?.organizationId ?? null;
+  } else if (orgIdParam) {
+    organizationId = orgIdParam;
+  }
+
+  if (!organizationId) {
     return NextResponse.json(
-      { error: "orgId es requerido" },
+      { error: "slug o orgId es requerido" },
       { status: 400 }
     );
   }
@@ -19,7 +33,7 @@ export async function GET(request: Request) {
     .from(orders)
     .where(
       and(
-        eq(orders.organizationId, orgId),
+        eq(orders.organizationId, organizationId),
         inArray(orders.status, ["pending", "accepted", "preparing"])
       )
     );
@@ -37,7 +51,7 @@ export async function GET(request: Request) {
         .from(orders)
         .where(
           and(
-            eq(orders.organizationId, orgId),
+            eq(orders.organizationId, organizationId),
             eq(orders.status, "completed")
           )
         )

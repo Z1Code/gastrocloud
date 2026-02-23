@@ -16,6 +16,7 @@ export async function GET() {
   const organizationId = session.user.organizationId;
 
   let cancelled = false;
+  let timer: ReturnType<typeof setTimeout> | null = null;
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -100,15 +101,16 @@ export async function GET() {
 
         // Schedule next poll
         if (!cancelled) {
-          setTimeout(poll, 3000);
+          timer = setTimeout(poll, 3000);
         }
       };
 
       // Start polling after initial delay
-      setTimeout(poll, 3000);
+      timer = setTimeout(poll, 3000);
     },
     cancel() {
       cancelled = true;
+      if (timer) clearTimeout(timer);
     },
   });
 

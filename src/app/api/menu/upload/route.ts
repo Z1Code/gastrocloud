@@ -21,6 +21,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No se envió archivo" }, { status: 400 });
   }
 
+  if (file.size > 5 * 1024 * 1024) {
+    return NextResponse.json({ error: "El archivo excede el límite de 5MB" }, { status: 400 });
+  }
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowedTypes.includes(file.type)) {
+    return NextResponse.json({ error: "Solo se permiten archivos JPG, PNG o WebP" }, { status: 400 });
+  }
+
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 

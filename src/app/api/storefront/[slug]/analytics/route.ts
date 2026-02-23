@@ -14,6 +14,12 @@ export async function POST(
   const body = await request.json();
   const { eventType, metadata, sessionId } = body;
 
+  // Whitelist allowed event types
+  const ALLOWED_EVENTS = ['page_view', 'menu_view', 'item_view', 'add_to_cart', 'remove_from_cart', 'checkout_start', 'checkout_complete', 'search'];
+  if (!eventType || !ALLOWED_EVENTS.includes(eventType)) {
+    return NextResponse.json({ error: 'Invalid event type' }, { status: 400 });
+  }
+
   const [restaurant] = await db.select().from(restaurants)
     .where(eq(restaurants.slug, slug));
 
@@ -21,11 +27,14 @@ export async function POST(
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
+  // Limit metadata size
+  const safeMetadata = metadata ? JSON.stringify(metadata).slice(0, 2048) : null;
+
   await db.insert(storefrontEvents).values({
     restaurantId: restaurant.id,
     eventType,
-    metadata: metadata || null,
-    sessionId: sessionId || null,
+    metadata: safeMetadata ? JSON.parse(safeMetadata) : null,
+    sessionId: sessionId ? String(sessionId).slice(0, 64) : null,
   });
 
   return NextResponse.json({ ok: true });
