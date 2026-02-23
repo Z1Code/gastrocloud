@@ -1,7 +1,13 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useKDSStore } from '@/stores/kdsStore';
+
+interface Stats {
+  avgPrepTime: number;
+  activeOrders: number;
+  completedToday: number;
+}
 
 function AnimatedNumber({ value }: { value: number }) {
   return (
@@ -21,7 +27,32 @@ function AnimatedNumber({ value }: { value: number }) {
 }
 
 export function KDSStats() {
-  const stats = useKDSStore((s) => s.stats);
+  const [stats, setStats] = useState<Stats>({
+    avgPrepTime: 0,
+    activeOrders: 0,
+    completedToday: 0,
+  });
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await fetch('/api/orders/stats');
+      if (!res.ok) return;
+      const data = await res.json();
+      setStats({
+        avgPrepTime: data.avgPrepTime ?? 0,
+        activeOrders: data.activeOrders ?? 0,
+        completedToday: data.completedToday ?? 0,
+      });
+    } catch {
+      // Silently fail
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+    const id = setInterval(fetchStats, 30000);
+    return () => clearInterval(id);
+  }, [fetchStats]);
 
   return (
     <div className="flex items-center justify-center gap-8 px-6 py-3 rounded-2xl bg-white/[0.04] backdrop-blur-xl border border-white/[0.08]">

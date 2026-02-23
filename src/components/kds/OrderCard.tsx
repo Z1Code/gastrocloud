@@ -15,6 +15,7 @@ import {
   QrCode,
   MessageCircle,
   Monitor,
+  Check,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 
@@ -85,43 +86,41 @@ const statusActions: Record<
   },
 };
 
-const itemEmojis: Record<string, string> = {
-  'Lomo a lo Pobre': '\uD83E\uDD69',
-  'Pastel de Choclo': '\uD83C\uDF5B',
-  'Empanadas de Pino': '\uD83E\uDD5F',
-  'Cesar Salad con Pollo': '\uD83E\uDD57',
-  'Pisco Sour': '\uD83C\uDF78',
-  'Churrasco Italiano': '\uD83C\uDF2E',
-  'Tres Leches': '\uD83C\uDF70',
-  'Flan Casero': '\uD83C\uDF6E',
-  'Cazuela de Vacuno': '\uD83C\uDF72',
-  'Michelada': '\uD83C\uDF7A',
-  'Ensalada Chilena': '\uD83E\uDD57',
-  'Pan Amasado': '\uD83C\uDF5E',
-  'Papas Fritas': '\uD83C\uDF5F',
-  'Bebida Cola': '\uD83E\uDD64',
-};
-
-function getEmoji(name: string): string {
-  return itemEmojis[name] || '\uD83C\uDF7D\uFE0F';
-}
-
 interface OrderCardProps {
   order: KDSOrder;
 }
 
 export function OrderCard({ order }: OrderCardProps) {
-  const updateOrderStatus = useKDSStore((s) => s.updateOrderStatus);
   const removeOrder = useKDSStore((s) => s.removeOrder);
+  const bumpItem = useKDSStore((s) => s.bumpItem);
   const source = sourceConfig[order.source];
   const action = order.status !== 'ready' ? statusActions[order.status] : null;
 
-  function handleAction() {
+  async function handleAction() {
     if (!action) return;
-    if (action.next === 'ready') {
-      setTimeout(() => removeOrder(order.id), 600);
+    try {
+      await fetch(`/api/orders/${order.id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: action.next }),
+      });
+      if (action.next === 'ready') {
+        setTimeout(() => removeOrder(order.id), 600);
+      }
+    } catch {
+      // Network error - ignore, SSE will reconcile
     }
-    updateOrderStatus(order.id, action.next);
+  }
+
+  async function handleBump(itemId: string) {
+    try {
+      await fetch(`/api/orders/${order.id}/items/${itemId}/bump`, {
+        method: 'PATCH',
+      });
+      bumpItem(order.id, itemId);
+    } catch {
+      // Network error - ignore
+    }
   }
 
   return (
@@ -178,13 +177,33 @@ export function OrderCard({ order }: OrderCardProps) {
       <div className="flex-1 px-4 py-3 space-y-2.5 max-h-[240px] overflow-y-auto">
         {order.items.map((item) => (
           <div key={item.id}>
-            <div className="flex items-center gap-2">
-              <span className="text-base">{getEmoji(item.name)}</span>
-              <span className="text-white font-semibold text-sm flex-1">
+            <button
+              onClick={() => handleBump(item.id)}
+              className={cn(
+                'flex items-center gap-2 w-full text-left',
+                item.bumped && 'opacity-50'
+              )}
+            >
+              <span
+                className={cn(
+                  'w-5 h-5 rounded border flex items-center justify-center flex-shrink-0',
+                  item.bumped
+                    ? 'bg-emerald-500 border-emerald-500'
+                    : 'border-white/20'
+                )}
+              >
+                {item.bumped && <Check size={12} className="text-white" />}
+              </span>
+              <span
+                className={cn(
+                  'text-white font-semibold text-sm flex-1',
+                  item.bumped && 'line-through'
+                )}
+              >
                 {item.name}
               </span>
               <span className="text-white/50 text-xs font-mono">x{item.quantity}</span>
-            </div>
+            </button>
 
             {item.ingredients.length > 0 && (
               <div className="ml-7 mt-0.5 space-y-0">
