@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartStore } from "@/stores/cartStore";
 import { clsx, type ClassValue } from "clsx";
@@ -36,14 +36,6 @@ function XIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-    </svg>
-  );
-}
-
-function CheckCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
     </svg>
   );
 }
@@ -93,6 +85,7 @@ function generateScheduleTimes(): string[] {
 export default function OrderPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const slug = params.slug as string;
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
@@ -105,7 +98,6 @@ export default function OrderPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
-  const [confirmed, setConfirmed] = useState(false);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [availableGateways, setAvailableGateways] = useState<string[]>([]);
   const [paymentMethod, setPaymentMethod] = useState<"local" | "mercadopago" | "transbank">("local");
@@ -145,47 +137,47 @@ export default function OrderPage() {
     setErrors({});
     setPaymentError(null);
 
-    // If paying online, redirect to payment gateway
-    if (paymentMethod !== "local") {
-      setIsProcessing(true);
-      try {
-        const res = await fetch("/api/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            slug,
-            gateway: paymentMethod,
-            items: items.map((item) => ({
-              menuItemId: item.menuItemId,
-              name: item.name,
-              quantity: item.quantity,
-              unitPrice: item.price,
-            })),
-            customerName: name,
-            customerPhone: phone,
-            notes,
-            orderType: orderType === "scheduled" ? "pickup_scheduled" : orderType === "dinein" ? "dine_in" : "takeaway",
-            tipAmount: tip,
-            scheduledAt: orderType === "scheduled" && scheduledTime
-              ? new Date(`${new Date().toISOString().split("T")[0]}T${scheduledTime}:00`).toISOString()
-              : undefined,
-          }),
-        });
-        const data = await res.json();
-        if (data.redirectUrl) {
-          window.location.href = data.redirectUrl;
-          return;
-        }
-        setPaymentError(data.error || "Error al procesar el pago");
-      } catch {
-        setPaymentError("Error de conexion");
-      } finally {
-        setIsProcessing(false);
+    setIsProcessing(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug,
+          gateway: paymentMethod,
+          items: items.map((item) => ({
+            menuItemId: item.menuItemId,
+            name: item.name,
+            quantity: item.quantity,
+            unitPrice: item.price,
+          })),
+          customerName: name,
+          customerPhone: phone,
+          notes,
+          orderType: orderType === "scheduled" ? "pickup_scheduled" : orderType === "dinein" ? "dine_in" : "takeaway",
+          tipAmount: tip,
+          scheduledAt: orderType === "scheduled" && scheduledTime
+            ? new Date(`${new Date().toISOString().split("T")[0]}T${scheduledTime}:00`).toISOString()
+            : undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.redirectUrl) {
+        // Online payment: redirect to gateway
+        window.location.href = data.redirectUrl;
+        return;
       }
-      return;
+      if (data.orderId) {
+        // Local payment: redirect to tracking page
+        router.push(`/r/${slug}/track/${data.orderId}`);
+        return;
+      }
+      setPaymentError(data.error || "Error al procesar el pago");
+    } catch {
+      setPaymentError("Error de conexion");
+    } finally {
+      setIsProcessing(false);
     }
-
-    setConfirmed(true);
   };
 
   // Payment return error
@@ -205,60 +197,6 @@ export default function OrderPage() {
             Intentar de Nuevo
           </motion.button>
         </Link>
-      </div>
-    );
-  }
-
-  // Success overlay
-  if (confirmed) {
-    return (
-      <div className="px-4 pt-12 text-center">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 15 }}
-        >
-          <div className="w-24 h-24 mx-auto rounded-full bg-emerald-100 flex items-center justify-center">
-            <CheckCircleIcon className="w-14 h-14 text-emerald-600" />
-          </div>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <h1 className="text-2xl font-bold text-[var(--sf-text)] mt-6">Pedido Confirmado</h1>
-          <p className="text-[var(--sf-text-muted)] mt-2">Tu orden ha sido recibida</p>
-          <div className="mt-6 inline-flex items-center gap-2 rounded-2xl px-6 py-3 bg-[var(--sf-surface)]">
-            <span className="text-sm text-[var(--sf-text-muted)]">Orden</span>
-            <span className="text-xl font-bold text-[var(--sf-text)]">#0234</span>
-          </div>
-          {orderType === "scheduled" && scheduledTime && (
-            <div className="mt-4 rounded-2xl px-6 py-4" style={{ background: `color-mix(in srgb, var(--sf-primary) 10%, var(--sf-bg))` }}>
-              <p className="text-sm font-medium text-[var(--sf-primary)]">Hora programada</p>
-              <p className="text-2xl font-bold text-[var(--sf-text)] mt-1">{scheduledTime} hrs</p>
-            </div>
-          )}
-          <div className="mt-4 rounded-2xl px-6 py-4" style={{ background: `color-mix(in srgb, var(--sf-primary) 10%, var(--sf-bg))` }}>
-            <p className="text-sm font-medium text-[var(--sf-primary)]">Tiempo estimado</p>
-            <p className="text-2xl font-bold text-[var(--sf-text)] mt-1">~20 minutos</p>
-          </div>
-          <div className="mt-8 space-y-3">
-            <Link href={`/r/${slug}/track`}>
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                className="w-full h-14 text-white font-semibold rounded-2xl bg-[var(--sf-primary)]"
-              >
-                Seguir mi pedido
-              </motion.button>
-            </Link>
-            <Link href={`/r/${slug}/menu`}>
-              <button className="w-full h-12 font-medium text-[var(--sf-primary)]">
-                Volver al menú
-              </button>
-            </Link>
-          </div>
-        </motion.div>
       </div>
     );
   }

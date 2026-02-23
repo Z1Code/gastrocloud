@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         })
         .where(eq(payments.orderId, orderId));
 
-      return NextResponse.redirect(`${appUrl}/r/${slug}/track?payment=success&orderId=${orderId}`);
+      return NextResponse.redirect(`${appUrl}/r/${slug}/track/${orderId}`);
     } else {
       return NextResponse.redirect(`${appUrl}/r/${slug}/order?payment=failure`);
     }
