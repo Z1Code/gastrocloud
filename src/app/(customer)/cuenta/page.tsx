@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { User, ShoppingBag, Store, Sparkles, Shield, ArrowRight } from "lucide-react";
@@ -9,36 +9,12 @@ import { useAuth } from "@/hooks/useAuth";
 export default function CuentaPage() {
   const { user, isLoading, isAdmin } = useAuth();
   const router = useRouter();
-  const [setupLoading, setSetupLoading] = useState(false);
-  const [setupDone, setSetupDone] = useState(false);
-
   // If user is admin, redirect to dashboard
   useEffect(() => {
     if (!isLoading && isAdmin) {
       router.replace("/dashboard");
     }
   }, [isLoading, isAdmin, router]);
-
-  async function handleSetup() {
-    setSetupLoading(true);
-    try {
-      const res = await fetch("/api/setup", { method: "POST" });
-      const data = await res.json();
-      if (res.ok) {
-        setSetupDone(true);
-        // Force session refresh then redirect
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1000);
-      } else {
-        alert(data.error ?? "Error al configurar");
-      }
-    } catch {
-      alert("Error de conexion");
-    } finally {
-      setSetupLoading(false);
-    }
-  }
 
   if (isLoading) {
     return (
@@ -151,32 +127,17 @@ export default function CuentaPage() {
               <Sparkles size={24} />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold">Tienes un restaurante?</h3>
+              <h3 className="text-lg font-semibold">¿Tienes un restaurante?</h3>
               <p className="text-white/80 text-sm mt-1 mb-4">
-                Configura tu cuenta como administrador y accede al panel completo de GastroCloud para gestionar tu negocio.
+                Crea tu cuenta de administrador y gestiona tu negocio con GastroCloud.
               </p>
-              <button
-                onClick={handleSetup}
-                disabled={setupLoading || setupDone}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-orange-600 font-semibold rounded-xl hover:bg-white/90 transition-colors disabled:opacity-50"
+              <a
+                href="/onboarding"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-orange-600 font-semibold rounded-xl hover:bg-white/90 transition-colors"
               >
-                {setupLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-                    Configurando...
-                  </>
-                ) : setupDone ? (
-                  <>
-                    <Shield size={18} />
-                    Configurado! Redirigiendo...
-                  </>
-                ) : (
-                  <>
-                    <Shield size={18} />
-                    Configurar como Admin
-                  </>
-                )}
-              </button>
+                <Shield size={18} />
+                Crear mi restaurante
+              </a>
             </div>
           </div>
         </motion.div>
