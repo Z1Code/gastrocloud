@@ -31,6 +31,7 @@ interface OrderItem {
   modifiers: any;
   station: string | null;
   notes: string | null;
+  menuItemName: string | null;
 }
 
 interface Payment {
@@ -415,7 +416,7 @@ export default function OrdersPage() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="flex items-center gap-1 p-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl mb-4 overflow-x-auto w-fit"
+        className="flex items-center gap-1 p-1 bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl mb-4 overflow-x-auto max-w-full"
       >
         {statusTabs.map((tab) => {
           const count =
@@ -541,7 +542,7 @@ export default function OrdersPage() {
                   <p className="text-xs text-slate-400 leading-relaxed">
                     {order.items.length > 0
                       ? order.items
-                          .map((item) => `${item.quantity}x Item`)
+                          .map((item) => `${item.quantity}x ${item.menuItemName ?? "Item"}`)
                           .join(", ")
                       : "Sin items"}
                   </p>

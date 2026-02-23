@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   }
 
   const formData = await request.formData();
-  const file = formData.get("file") as File | null;
+  const file = (formData.get("logo") ?? formData.get("file")) as File | null;
   if (!file) {
     return NextResponse.json({ error: "No se envió archivo" }, { status: 400 });
   }
@@ -77,5 +77,19 @@ export async function POST(request: Request) {
     .set({ logoUrl: result.secure_url, updatedAt: new Date() })
     .where(eq(restaurants.organizationId, session.user.organizationId));
 
-  return NextResponse.json(result);
+  return NextResponse.json({ logoUrl: result.secure_url });
+}
+
+export async function DELETE() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.organizationId) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
+
+  await db
+    .update(restaurants)
+    .set({ logoUrl: null, updatedAt: new Date() })
+    .where(eq(restaurants.organizationId, session.user.organizationId));
+
+  return NextResponse.json({ ok: true });
 }

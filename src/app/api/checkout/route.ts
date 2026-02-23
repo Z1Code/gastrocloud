@@ -89,20 +89,22 @@ export async function POST(request: NextRequest) {
     : [];
   const menuItemMap = new Map(menuItemsData.map((mi) => [mi.id, mi]));
 
-  for (const item of items) {
-    const menuItem = menuItemMap.get(item.menuItemId);
-    await db.insert(orderItems).values({
-      orderId: order.id,
-      menuItemId: item.menuItemId,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice.toString(),
-      station: menuItem?.station || null,
-      modifiers: {
-        ingredients: menuItem?.ingredients || [],
-        customerModifiers: item.modifiers || [],
-      },
-    });
-  }
+  await db.insert(orderItems).values(
+    items.map((item) => {
+      const menuItem = menuItemMap.get(item.menuItemId);
+      return {
+        orderId: order.id,
+        menuItemId: item.menuItemId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice.toString(),
+        station: menuItem?.station || null,
+        modifiers: {
+          ingredients: menuItem?.ingredients || [],
+          customerModifiers: item.modifiers || [],
+        },
+      };
+    })
+  );
 
   // Create payment record
   const [payment] = await db.insert(payments).values({

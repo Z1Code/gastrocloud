@@ -57,46 +57,45 @@ export async function POST(request: Request) {
     .replace(/^-|-$/g, "")
     + "-" + Date.now().toString(36);
 
-  const [org] = await db
-    .insert(organizations)
-    .values({ name: orgName, slug })
-    .returning();
+  const result = await db.transaction(async (tx) => {
+    const [org] = await tx
+      .insert(organizations)
+      .values({ name: orgName, slug })
+      .returning();
 
-  const [restaurant] = await db
-    .insert(restaurants)
-    .values({
-      organizationId: org.id,
-      name: restaurantName,
-      slug: restaurantSlug,
-      description: cuisineType ? `Cocina ${cuisineType}` : undefined,
-      address: address || undefined,
-    })
-    .returning();
+    const [restaurant] = await tx
+      .insert(restaurants)
+      .values({
+        organizationId: org.id,
+        name: restaurantName,
+        slug: restaurantSlug,
+        description: cuisineType ? `Cocina ${cuisineType}` : undefined,
+        address: address || undefined,
+      })
+      .returning();
 
-  const [branch] = await db
-    .insert(branches)
-    .values({
-      organizationId: org.id,
-      restaurantId: restaurant.id,
-      name: "Sucursal Principal",
-      address: address || undefined,
-    })
-    .returning();
+    const [branch] = await tx
+      .insert(branches)
+      .values({
+        organizationId: org.id,
+        restaurantId: restaurant.id,
+        name: "Sucursal Principal",
+        address: address || undefined,
+      })
+      .returning();
 
-  const [staff] = await db
-    .insert(staffMembers)
-    .values({
-      organizationId: org.id,
-      userId: session.user.id,
-      branchId: branch.id,
-      role: "owner",
-    })
-    .returning();
+    const [staff] = await tx
+      .insert(staffMembers)
+      .values({
+        organizationId: org.id,
+        userId: session.user.id,
+        branchId: branch.id,
+        role: "owner",
+      })
+      .returning();
 
-  return NextResponse.json({
-    organization: org,
-    restaurant,
-    branch,
-    staff,
+    return { organization: org, restaurant, branch, staff };
   });
+
+  return NextResponse.json(result);
 }

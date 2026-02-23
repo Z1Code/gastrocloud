@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     if (!signature) {
       console.error('[WhatsApp Webhook] Missing X-Hub-Signature-256 header');
-      return NextResponse.json({ status: 'ok' }, { status: 200 });
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
     }
 
     // Find the matching WhatsApp config by verifying signature
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
 
     if (!matchedConfig) {
       console.error('[WhatsApp Webhook] No matching config found for signature');
-      return NextResponse.json({ status: 'ok' }, { status: 200 });
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     const body = JSON.parse(rawBody);
@@ -267,12 +267,19 @@ export async function POST(request: NextRequest) {
       interactiveData: messageType === 'interactive'
         ? (message.interactive as { type: 'button_reply' | 'list_reply'; id: string; title: string })
         : undefined,
-      session: {
-        id: session.id,
-        state: session.state,
-        cartData: (session.cartData ?? null) as import('@/types').WhatsAppCartData | null,
-        customerName: session.customerName,
-      },
+      session: session
+        ? {
+            id: session.id,
+            state: session.state,
+            cartData: (session.cartData ?? null) as import('@/types').WhatsAppCartData | null,
+            customerName: session.customerName,
+          }
+        : {
+            id: '',
+            state: 'greeting' as const,
+            cartData: null,
+            customerName: null,
+          },
       restaurantName: restaurant.name,
       restaurantId: restaurant.id,
       menuCategories: menuData,
@@ -459,14 +466,14 @@ async function createOrderFromCart({
     if (!newOrder) return;
 
     // Create order items
-    for (const item of resolvedItems) {
-      await db.insert(orderItems).values({
+    await db.insert(orderItems).values(
+      resolvedItems.map((item) => ({
         orderId: newOrder.id,
         menuItemId: item.menuItemId,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
-      });
-    }
+      }))
+    );
 
     // Send confirmation message
     try {

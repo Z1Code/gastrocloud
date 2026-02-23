@@ -230,7 +230,12 @@ export default function SettingsPage() {
       const source = prev[firstOpenDay];
       const updated: OperatingHours = {};
       for (const key of DAY_KEYS) {
-        updated[key] = { isOpen: source.isOpen, timeRanges: source.timeRanges.map((r) => ({ ...r })) };
+        if (prev[key].isOpen) {
+          // Only copy time ranges to days that are already open
+          updated[key] = { isOpen: true, timeRanges: source.timeRanges.map((r) => ({ ...r })) };
+        } else {
+          updated[key] = { ...prev[key] };
+        }
       }
       return updated;
     });

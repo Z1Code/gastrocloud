@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { orders, orderItems } from "@/db/schema";
+import { orders, orderItems, menuItems } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function GET(
@@ -9,6 +9,14 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+
+    // Validate UUID format to prevent enumeration
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      return NextResponse.json(
+        { error: "Orden no encontrada" },
+        { status: 404 }
+      );
+    }
 
     const [order] = await db
       .select({
@@ -20,7 +28,6 @@ export async function GET(
         notes: orders.notes,
         createdAt: orders.createdAt,
         estimatedReadyAt: orders.estimatedReadyAt,
-        organizationId: orders.organizationId,
       })
       .from(orders)
       .where(eq(orders.id, id));
@@ -32,6 +39,7 @@ export async function GET(
       );
     }
 
+    // Join with menuItems to get item names
     const items = await db
       .select({
         id: orderItems.id,
@@ -39,8 +47,10 @@ export async function GET(
         unitPrice: orderItems.unitPrice,
         modifiers: orderItems.modifiers,
         notes: orderItems.notes,
+        menuItemName: menuItems.name,
       })
       .from(orderItems)
+      .leftJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
       .where(eq(orderItems.orderId, id));
 
     return NextResponse.json({ ...order, items });

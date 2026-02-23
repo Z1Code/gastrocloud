@@ -1,7 +1,7 @@
 // src/components/table-qr-modal.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Download, Copy, Check } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -12,22 +12,23 @@ interface TableQRModalProps {
   table: { number: number; zone: string | null; qrCode: string } | null;
 }
 
-function downloadSVG(tableNumber: number) {
-  const svg = document.getElementById("table-qr-svg");
-  if (!svg) return;
-  const serializer = new XMLSerializer();
-  const svgStr = serializer.serializeToString(svg);
-  const blob = new Blob([svgStr], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `mesa-${tableNumber}-qr.svg`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
 export function TableQRModal({ open, onClose, table }: TableQRModalProps) {
   const [copied, setCopied] = useState(false);
+  const qrRef = useRef<SVGSVGElement>(null);
+
+  function handleDownloadSVG() {
+    const svg = qrRef.current;
+    if (!svg || !table) return;
+    const serializer = new XMLSerializer();
+    const svgStr = serializer.serializeToString(svg);
+    const blob = new Blob([svgStr], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mesa-${table.number}-qr.svg`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   async function handleCopy() {
     if (!table) return;
@@ -76,7 +77,7 @@ export function TableQRModal({ open, onClose, table }: TableQRModalProps) {
               <div className="flex justify-center mb-4">
                 <div className="bg-white rounded-xl p-4">
                   <QRCodeSVG
-                    id="table-qr-svg"
+                    ref={qrRef}
                     value={table.qrCode}
                     size={256}
                     level="H"
@@ -94,7 +95,7 @@ export function TableQRModal({ open, onClose, table }: TableQRModalProps) {
               {/* Action buttons */}
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => downloadSVG(table.number)}
+                  onClick={handleDownloadSVG}
                   className="flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-lg shadow-orange-500/25 transition-all"
                 >
                   <Download size={16} />

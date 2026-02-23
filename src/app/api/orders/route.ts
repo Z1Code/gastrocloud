@@ -49,8 +49,21 @@ export async function GET(request: Request) {
 
   const orderIds = orderRows.map((o) => o.id);
 
+  const { menuItems } = await import('@/db/schema');
   const [items, pays] = await Promise.all([
-    db.select().from(orderItems).where(inArray(orderItems.orderId, orderIds)),
+    db.select({
+      id: orderItems.id,
+      orderId: orderItems.orderId,
+      menuItemId: orderItems.menuItemId,
+      quantity: orderItems.quantity,
+      unitPrice: orderItems.unitPrice,
+      modifiers: orderItems.modifiers,
+      station: orderItems.station,
+      notes: orderItems.notes,
+      menuItemName: menuItems.name,
+    }).from(orderItems)
+      .leftJoin(menuItems, eq(orderItems.menuItemId, menuItems.id))
+      .where(inArray(orderItems.orderId, orderIds)),
     db.select().from(payments).where(inArray(payments.orderId, orderIds)),
   ]);
 

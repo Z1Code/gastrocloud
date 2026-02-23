@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     if (!signature) {
       console.error('[UberEats Webhook] Missing X-Uber-Signature header');
-      return NextResponse.json({ status: 'ok' }, { status: 200 });
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
     }
 
     // Find the matching Uber Eats config by verifying the signature against all active configs
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     if (!matchedConfig) {
       console.error('[UberEats Webhook] No matching config found for signature');
-      return NextResponse.json({ status: 'ok' }, { status: 200 });
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
     const body = JSON.parse(rawBody);
@@ -149,7 +149,7 @@ async function handleNewOrder(
     : 'Cliente Uber Eats';
 
   const totalAmount = payment?.charges?.total?.amount
-    ? String(payment.charges.total.amount / 100)
+    ? String(payment.charges.total.amount)
     : '0';
 
   // Check for duplicate order
@@ -182,23 +182,34 @@ async function handleNewOrder(
 
   // Create order items by matching names
   if (cart?.items && newOrder) {
+    const itemsToInsert: Array<{
+      orderId: string;
+      menuItemId: string;
+      quantity: number;
+      unitPrice: string;
+    }> = [];
+
     for (const cartItem of cart.items) {
       const matchedItem = restaurantMenuItems.find(
         (mi) => mi.name.toLowerCase() === cartItem.title.toLowerCase(),
       );
 
       if (matchedItem) {
-        await db.insert(orderItems).values({
+        itemsToInsert.push({
           orderId: newOrder.id,
           menuItemId: matchedItem.id,
           quantity: cartItem.quantity,
-          unitPrice: String(cartItem.price.unit_price.amount / 100),
+          unitPrice: String(cartItem.price.unit_price.amount),
         });
       } else {
         console.error(
           `[UberEats Webhook] No matching menu item for: ${cartItem.title}`,
         );
       }
+    }
+
+    if (itemsToInsert.length > 0) {
+      await db.insert(orderItems).values(itemsToInsert);
     }
   }
 }
