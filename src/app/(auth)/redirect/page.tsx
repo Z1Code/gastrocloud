@@ -19,7 +19,7 @@ export default function RedirectPage() {
     const role = user.role;
 
     if (!role) {
-      router.replace("/cuenta");
+      router.replace("/onboarding");
       return;
     }
 
